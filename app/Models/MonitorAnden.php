@@ -6,17 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class MonitorAnden extends Model
 {
-    protected $table = 'monitor_andenes';
-    protected $primaryKey = 'IDMonitor';
+    protected $table = 'MonitorAndenes';
+    protected $primaryKey = 'IdMonitor';
     public $timestamps = false;
 
-    protected $fillable = ['IDMovto', 'IDAnden', 'NoAnden'];
+    protected $fillable = [
+        'IDMovto', 'IDAnden', 'NoAnden'
+    ];
 
-    public function movto() {
-        return $this->belongsTo(Movtos::class, 'IDMovto', 'IDMovto');
+    public function Movto()
+    {
+        return $this->belongsTo(Movto::class, 'IdMonitor', 'IDMovto');
     }
 
-    public function anden() {
+    public function Anden()
+    {
         return $this->belongsTo(Anden::class, 'IDAnden', 'IDAnden');
     }
 }
+

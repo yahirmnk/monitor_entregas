@@ -6,13 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class CasetaSerdan extends Model
 {
-    protected $table = 'caseta_serdan';
+    protected $table = 'CasetaSerdan';
     protected $primaryKey = 'IDCaseta';
     public $timestamps = false;
 
-    protected $fillable = ['IDMovto', 'HoraSalida'];
+    protected $fillable = [
+        'IDMovto', 'HoraSalida'
+    ];
 
-    public function movto() {
-        return $this->belongsTo(Movtos::class, 'IDMovto', 'IDMovto');
+    public function Movto()
+    {
+        return $this->belongsTo(Movto::class, 'IDCaseta', 'IDMovto');
     }
 }

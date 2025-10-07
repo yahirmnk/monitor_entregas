@@ -1,0 +1,29 @@
+@keyframes blink {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.estado-verde {
+  background-color: #16a34a; /* green-600 */
+  color: white;
+  transition: all 0.4s ease;
+}
+
+.estado-naranja {
+  background-color: #f97316; /* orange-500 */
+  animation: blink 1s infinite;
+  color: black;
+}
+
+.estado-rojo {
+  background-color: #dc2626; /* red-600 */
+  animation: blink 1s infinite;
+  color: white;
+}
+
+.fila-roja {
+  background-color: #dc2626;
+  color: white;
+  animation: blink 1s infinite;
+}

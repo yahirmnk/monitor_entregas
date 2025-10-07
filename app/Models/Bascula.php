@@ -6,13 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Bascula extends Model
 {
-    protected $table = 'bascula';
+    protected $table = 'Bascula';
     protected $primaryKey = 'IDBascula';
     public $timestamps = false;
 
-    protected $fillable = ['IDMovto', 'HoraEntradaBascula'];
+    protected $fillable = [
+        'IDMovto', 'HoraEntradaBascula', 'HoraSalidaBascula'
+    ];
 
-    public function movto() {
-        return $this->belongsTo(Movtos::class, 'IDMovto', 'IDMovto');
+    public function Movto()
+    {
+        return $this->belongsTo(Movto::class, 'IDBascula', 'IDMovto');
     }
 }
