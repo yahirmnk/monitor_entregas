@@ -1,8 +1,40 @@
 import { useState, useEffect } from 'react'
 import { Head } from '@inertiajs/react'
 import { parseISO, differenceInMinutes, differenceInHours, isAfter } from 'date-fns'
-import "../css/dashboard.css";
 
+// CSS embebido directamente en el archivo
+const estilos = `
+@keyframes blink {
+  50% { opacity: 0.4; }
+}
+.estado-verde {
+  background-color: #16a34a; /* green-600 */
+  color: white;
+  transition: all 0.4s ease;
+}
+.estado-naranja {
+  background-color: #f97316; /* orange-500 */
+  animation: blink 1s infinite;
+  color: black;
+}
+.estado-rojo {
+  background-color: #dc2626; /* red-600 */
+  animation: blink 1s infinite;
+  color: white;
+}
+.fila-roja {
+  background-color: #dc2626;
+  color: white;
+  animation: blink 1s infinite;
+}
+`
+
+// Inyectar los estilos al <head> del documento
+if (typeof document !== 'undefined') {
+  const styleTag = document.createElement('style')
+  styleTag.innerHTML = estilos
+  document.head.appendChild(styleTag)
+}
 
 // Formatear fecha a dd/mm/yyyy HH:mm:ss
 const formatearFecha = (valor) => {
@@ -28,7 +60,7 @@ const getColorClase = (movto) => {
 
   let clase = ''
 
-  // Cita Delta vs Llegada Delta
+  // 1. Cita Delta vs Llegada Delta
   if (citaDelta && llegadaDelta) {
     const diff = differenceInMinutes(llegadaDelta, citaDelta)
     if (diff > 120) clase = 'estado-rojo'
@@ -36,14 +68,14 @@ const getColorClase = (movto) => {
     else if (diff <= 0) clase = 'estado-verde'
   }
 
-  // Entrada Báscula → 20 minutos
+  // 2. Entrada Báscula → 20 minutos
   if (entradaBascula && !llegadaAnden) {
     const minutos = differenceInMinutes(ahora, entradaBascula)
     if (minutos >= 20) clase = 'estado-rojo'
     else clase = 'estado-naranja'
   }
 
-  // Salida Delta vs Inicio Ruta
+  // 3. Salida Delta vs Inicio Ruta
   if (salidaDelta && inicioRuta) {
     const diffHoras = differenceInHours(inicioRuta, salidaDelta)
     if (diffHoras <= 1) clase = 'fila-roja'
@@ -60,15 +92,17 @@ export default function Dashboard() {
     return hoy.toISOString().split('T')[0]
   })
   const [movtos, setMovtos] = useState([])
-  const [intervalo, setIntervalo] = useState(60000) // 1 min (en milisegundos)
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
 
-  //  Carga inicial y recarga automática
+  // Intervalo de actualización (1 minuto)
+  const INTERVALO_ACTUALIZACION = 60000
+
+  // Carga inicial y recarga automática
   useEffect(() => {
     obtenerDatos(fechaSeleccionada)
-    const timer = setInterval(() => obtenerDatos(fechaSeleccionada), intervalo)
+    const timer = setInterval(() => obtenerDatos(fechaSeleccionada), INTERVALO_ACTUALIZACION)
     return () => clearInterval(timer)
-  }, [fechaSeleccionada, intervalo])
+  }, [fechaSeleccionada])
 
   const obtenerDatos = async (fecha) => {
     try {
@@ -98,17 +132,6 @@ export default function Dashboard() {
               value={fechaSeleccionada}
               onChange={(e) => setFechaSeleccionada(e.target.value)}
               className="border rounded px-2 py-1"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium">Intervalo (segundos)</label>
-            <input
-              type="number"
-              min="10"
-              value={intervalo / 1000}
-              onChange={(e) => setIntervalo(Number(e.target.value) * 1000)}
-              className="border rounded w-20 px-1 text-center"
             />
           </div>
 
