@@ -11,7 +11,7 @@ class MonitorAnden extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'IDMovto', 'IDAnden', 'NoAnden'
+        'IDMovto', 'IDAnden', 'NoAnden', 'HoraLlegada'
     ];
 
     public function Movto()

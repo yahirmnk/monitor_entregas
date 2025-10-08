@@ -22,7 +22,7 @@ const estilos = `
   animation: blink 1s infinite;
   color: white;
 }
-.fila-roja {
+.fila-roja td:not(:empty) {
   background-color: #dc2626;
   color: white;
   animation: blink 1s infinite;
@@ -63,24 +63,26 @@ const getColorClase = (movto) => {
   // 1. Cita Delta vs Llegada Delta
   if (citaDelta && llegadaDelta) {
     const diff = differenceInMinutes(llegadaDelta, citaDelta)
-    if (diff > 120) clase = 'estado-rojo'
-    else if (diff > 60) clase = 'estado-naranja'
-    else if (diff <= 0) clase = 'estado-verde'
+    if (diff <= 0) clase = 'estado-verde'
+    else if (diff > 120 && clase === '') clase = 'estado-rojo'
+    else if (diff > 60 && clase === '') clase = 'estado-naranja'
   }
 
-  // 2. Entrada Báscula → 20 minutos
-  if (entradaBascula && !llegadaAnden) {
-    const minutos = differenceInMinutes(ahora, entradaBascula)
-    if (minutos >= 20) clase = 'estado-rojo'
-    else clase = 'estado-naranja'
+  // 2. Entrada Báscula → 20 minutos (sin sobrescribir verde o rojo)
+  if (clase === '' || clase === 'estado-naranja') {
+    if (entradaBascula && !llegadaAnden) {
+      const minutos = differenceInMinutes(ahora, entradaBascula)
+      if (minutos >= 20 && clase !== 'estado-verde') clase = 'estado-rojo'
+      else if (clase === '') clase = 'estado-naranja'
+    }
   }
 
-  // 3. Salida Delta vs Inicio Ruta
+  // 3. Salida Delta vs Inicio Ruta (solo fila completa)
   if (salidaDelta && inicioRuta) {
     const diffHoras = differenceInHours(inicioRuta, salidaDelta)
-    if (diffHoras <= 1) clase = 'fila-roja'
-    else if (diffHoras <= 2) clase = 'estado-naranja'
-    else if (isAfter(inicioRuta, salidaDelta)) clase = 'estado-verde'
+    if (diffHoras <= 1) return 'fila-roja'
+    else if (diffHoras <= 2 && clase === '') clase = 'estado-naranja'
+    else if (isAfter(inicioRuta, salidaDelta) && clase === '') clase = 'estado-verde'
   }
 
   return clase
@@ -94,26 +96,49 @@ export default function Dashboard() {
   const [movtos, setMovtos] = useState([])
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
 
-  // Intervalo de actualización (1 minuto)
-  const INTERVALO_ACTUALIZACION = 60000
+  // Intervalo fijo de actualización (milisegundos)
+  const INTERVALO_ACTUALIZACION = 300000
 
-  // Carga inicial y recarga automática
   useEffect(() => {
+    console.log("Componente montado. Fecha seleccionada:", fechaSeleccionada)
     obtenerDatos(fechaSeleccionada)
-    const timer = setInterval(() => obtenerDatos(fechaSeleccionada), INTERVALO_ACTUALIZACION)
-    return () => clearInterval(timer)
+
+    const timer = setInterval(() => {
+      console.log("Ejecutando actualización automática...")
+      obtenerDatos(fechaSeleccionada)
+    }, INTERVALO_ACTUALIZACION)
+
+    return () => {
+      console.log("Componente desmontado o fecha cambiada, limpiando intervalo.")
+      clearInterval(timer)
+    }
   }, [fechaSeleccionada])
 
   const obtenerDatos = async (fecha) => {
     try {
+      console.log("Solicitando datos del backend para la fecha:", fecha)
       const res = await fetch(`/api/monitor/json?fecha=${fecha}`)
-      if (!res.ok) throw new Error('Error al obtener datos')
+
+      if (!res.ok) {
+        console.error("Error HTTP en la respuesta:", res.status)
+        throw new Error(`Error HTTP ${res.status}`)
+      }
+
       const data = await res.json()
-      setMovtos(data.data || [])
+
+      if (data && Array.isArray(data.data)) {
+        console.log("Datos recibidos:", data.data.length, "registros")
+        setMovtos(data.data)
+      } else {
+        console.warn("Formato inesperado de respuesta:", data)
+        setMovtos([])
+      }
+
       setUltimaActualizacion(new Date().toLocaleTimeString())
-      console.log(`Datos actualizados: ${new Date().toLocaleTimeString()}`)
+      console.log("Actualización completada correctamente:", new Date().toLocaleTimeString())
     } catch (err) {
-      console.error('Error al refrescar datos:', err)
+      console.error("Error al refrescar datos:", err)
+      setMovtos([]) // Evita quedarse con datos corruptos
     }
   }
 
@@ -130,7 +155,10 @@ export default function Dashboard() {
             <input
               type="date"
               value={fechaSeleccionada}
-              onChange={(e) => setFechaSeleccionada(e.target.value)}
+              onChange={(e) => {
+                console.log("Fecha seleccionada manualmente:", e.target.value)
+                setFechaSeleccionada(e.target.value)
+              }}
               className="border rounded px-2 py-1"
             />
           </div>
@@ -175,7 +203,7 @@ export default function Dashboard() {
             ) : (
               <tr>
                 <td colSpan="9" className="text-center py-3 text-gray-500">
-                  No hay registros
+                  No hay registros para la fecha seleccionada
                 </td>
               </tr>
             )}

@@ -11,7 +11,7 @@ class Bascula extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'IDMovto', 'HoraEntradaBascula', 'HoraSalidaBascula'
+        'IDMovto', 'HoraEntradaBascula', 'HoraSalidaBascula', 'HoraSalidaBasEmbarque',
     ];
 
     public function Movto()

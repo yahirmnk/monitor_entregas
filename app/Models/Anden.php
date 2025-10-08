@@ -21,6 +21,6 @@ class Anden extends Model
 
     public function MonitorAndenes()
     {
-        return $this->hasOne(MonitorAnden::class, 'IDAnden', 'IDAnden');
+        return $this->hasOne(MonitorAnden::class, 'IDAnden', 'IDMovto');
     }
 }

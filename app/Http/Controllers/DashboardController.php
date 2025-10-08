@@ -15,33 +15,36 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         try {
-            // Fecha actual o seleccionada desde el filtro
             $fecha = $request->input('fecha', now()->toDateString());
 
-            // Consulta principal con relaciones reales del proyecto
+            
             $query = Movto::with([
                 'Delta',
                 'Bascula',
                 'CasetaSerdan',
-                'MonitorAndenes.Anden'
+                'MonitorAndenes',
+                'Anden'
             ])->whereDate('FechaRegistro', $fecha);
 
             $movtos = $query->get()->map(function ($movto) {
                 return [
                     'ODP'            => $movto->ODP,
                     'CitaDelta'      => $movto->CitaDelta ?? null,
-                    'LlegadaDelta'   => $movto->Delta->LlegadaDelta ?? null,
-                    'SalidaDelta'    => $movto->Delta->SalidaDelta ?? null,
-                    'EntradaBascula' => $movto->Bascula->HoraEntradaBascula ?? null,
-                    'NoAnden'        => $movto->MonitorAndenes->NoAnden ?? $movto->MonitorAndenes->Anden->NoAnden ?? null,
-                    'LlegadaAnden'   => $movto->MonitorAndenes->Anden->LlegadaAnden ?? null,
-                    'SalidaPlanta'   => $movto->Bascula->HoraSalidaBascula ?? null, 
-                    //'SalidaPlanta'   => $movto->CasetaSerdan->HoraSalida ?? null,
-                    'InicioRuta'     => $movto->MonitorAndenes->Anden->HoraSalida ?? null,
+                    'LlegadaDelta'   => $movto->Delta?->LlegadaDelta ?? null,
+                    'SalidaDelta'    => $movto->Delta?->SalidaDelta ?? null,
+                    'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null,
+                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
+                    'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null,
+                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula?? $movto->CasetaSerdan?->HoraSalida ?? null,
+                    'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null,
                 ];
             });
 
-            $fechaTexto = ucfirst(Carbon::parse($fecha)->locale('es')->translatedFormat('l d \\d\\e F Y'));
+            $fechaTexto = ucfirst(
+                Carbon::parse($fecha)
+                    ->locale('es')
+                    ->translatedFormat('l d \\d\\e F Y')
+            );
 
             return Inertia::render('Dashboard', [
                 'movtos' => $movtos,
@@ -70,26 +73,31 @@ class DashboardController extends Controller
                 'Delta',
                 'Bascula',
                 'CasetaSerdan',
-                'MonitorAndenes.Anden'
+                'MonitorAndenes',
+                'Anden'
             ])->whereDate('FechaRegistro', $fecha);
 
             $datos = $query->get()->map(function ($movto) {
                 return [
                     'ODP'            => $movto->ODP,
                     'CitaDelta'      => $movto->CitaDelta ?? null,
-                    'LlegadaDelta'   => $movto->Delta->LlegadaDelta ?? null,
-                    'SalidaDelta'    => $movto->Delta->SalidaDelta ?? null,
-                    'EntradaBascula' => $movto->Bascula->HoraEntradaBascula ?? null,
-                    'NoAnden'        => $movto->MonitorAndenes->NoAnden ?? $movto->MonitorAndenes->Anden->NoAnden ?? null,
-                    'LlegadaAnden'   => $movto->MonitorAndenes->Anden->HoraLlegada ?? null,
-                    'SalidaPlanta'   => $movto->CasetaSerdan->HoraSalida ?? null,
-                    'InicioRuta'     => $movto->MonitorAndenes->Anden->HoraSalida ?? null,
+                    'LlegadaDelta'   => $movto->Delta?->LlegadaDelta ?? null,
+                    'SalidaDelta'    => $movto->Delta?->SalidaDelta ?? null,
+                    'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null,
+                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
+                    'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null,
+                    'SalidaPlanta'   => $movto->CasetaSerdan?->HoraSalida ?? $movto->Bascula?->HoraSalidaBascula ?? null,
+                    'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null,
                 ];
             });
 
             return response()->json([
                 'fecha_consultada' => $fecha,
-                'fecha_texto' => ucfirst(Carbon::parse($fecha)->locale('es')->translatedFormat('l d \\d\\e F Y')),
+                'fecha_texto' => ucfirst(
+                    Carbon::parse($fecha)
+                        ->locale('es')
+                        ->translatedFormat('l d \\d\\e F Y')
+                ),
                 'total' => $datos->count(),
                 'data' => $datos,
                 'sin_datos' => $datos->isEmpty() ? 'No hay registros para la fecha seleccionada' : false,
