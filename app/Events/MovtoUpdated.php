@@ -2,46 +2,47 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use App\Models\Movto;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Movtos;
 
 class MovtoUpdated implements ShouldBroadcast
 {
-    use SerializesModels;
+    use InteractsWithSockets, SerializesModels;
 
-    public $movtoData;
+    public $movto;
 
-    public function __construct(Movtos $movto)
+    public function __construct(Movto $movto)
     {
-        // Incluimos relaciones para enviarlas al front
-        $this->movtoData = $movto->load(['delta', 'caseta', 'bascula', 'monitorAnden.anden']);
+        $this->movto = $movto->load([
+            'Delta',
+            'Bascula',
+            'CasetaSerdan',
+            'MonitorAndenes',
+            'Anden',
+        ]);
     }
 
-    public function broadcastOn(): Channel
+    public function broadcastOn()
     {
-        return new Channel('movtos-channel');
+        return new PrivateChannel('monitor-logistico');
     }
 
-    public function broadcastAs(): string
-    {
-        return 'movto.updated';
-    }
-
-    public function broadcastWith(): array
+    public function broadcastWith()
     {
         return [
-            'movto' => [
-                'ODP' => $this->movtoData->ODP,
-                'CitaAnden' => $this->movtoData->CitaAnden,
-                'CitaDelta' => $this->movtoData->CitaDelta,
-                'SalidaDelta' => $this->movtoData->delta->SalidaDelta ?? null,
-                'LlegadaDelta' => $this->movtoData->delta->LlegadaDelta ?? null,
-                'HoraSalida' => $this->movtoData->caseta->HoraSalida ?? null,
-                'HoraEntradaBascula' => $this->movtoData->bascula->HoraEntradaBascula ?? null,
-                'NoAnden' => $this->movtoData->monitorAnden->NoAnden ?? $this->movtoData->monitorAnden->anden->NoAnden ?? null,
-            ]
+            'id' => $this->movto->IDMovto,
+            'ODP' => $this->movto->ODP,
+            'CitaDelta' => $this->movto->CitaDelta,
+            'LlegadaDelta' => $this->movto->Delta?->LlegadaDelta,
+            'SalidaDelta' => $this->movto->Delta?->SalidaDelta,
+            'EntradaBascula' => $this->movto->Bascula?->HoraEntradaBascula,
+            'NoAnden' => $this->movto->MonitorAndenes?->NoAnden ?? $this->movto->Anden?->NoAnden,
+            'LlegadaAnden' => $this->movto->Anden?->HoraLlegada,
+            'SalidaPlanta' => $this->movto->Bascula?->HoraSalidaBasEmbarque ?? $this->movto->CasetaSerdan?->HoraSalida,
+            'InicioRuta' => $this->movto->FechaProgramacion,
         ];
     }
 }

@@ -3,7 +3,9 @@ import { Head } from '@inertiajs/react'
 import { parseISO, differenceInMinutes, differenceInHours } from 'date-fns'
 import * as dateFnsTz from 'date-fns-tz'
 
-// ==================== CSS =====================
+import echo from '../echo'
+
+// CSS 
 const estilos = `
 @keyframes blink {
   50% { opacity: 0.4; }
@@ -29,6 +31,7 @@ const estilos = `
 }
 `;
 
+
 // Inyectar estilos en el documento
 if (typeof document !== 'undefined') {
   const styleTag = document.createElement('style')
@@ -36,7 +39,7 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleTag)
 }
 
-// ==================== FUNCIONES =====================
+// FUNCIONES 
 
 // Formatear fecha a dd/mm/yyyy HH:mm:ss
 const formatearFecha = (valor) => {
@@ -50,7 +53,7 @@ const formatearFecha = (valor) => {
   }
 }
 
-// ==================== LÓGICA DE COLORES =====================
+// LÓGICA DE COLORES 
 const getColorClase = (movto) => {
   const zona = 'America/Mexico_City'
 
@@ -131,7 +134,7 @@ const getColorClase = (movto) => {
   return clase
 }
 
-// ==================== COMPONENTE PRINCIPAL =====================
+// COMPONENTE PRINCIPAL 
 export default function Dashboard() {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
     const hoy = new Date()
@@ -140,7 +143,8 @@ export default function Dashboard() {
   const [movtos, setMovtos] = useState([])
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
 
-  const INTERVALO_ACTUALIZACION = 300000 // 5 minutos
+  //const INTERVALO_ACTUALIZACION = 300000 // 5 minutos
+  const INTERVALO_ACTUALIZACION = 180000 //3 minutos
 
   useEffect(() => {
     console.log('Componente montado. Fecha seleccionada:', fechaSeleccionada)
@@ -156,6 +160,27 @@ export default function Dashboard() {
       clearInterval(timer)
     }
   }, [fechaSeleccionada])
+
+   // ECHO
+  useEffect(() => {
+    console.log('Escuchando canal privado: monitor-logistico...')
+
+    const channel = echo.private('monitor-logistico')
+
+    channel.listen('MovtoUpdated', (evento) => {
+      console.log('Evento recibido:', evento)
+      setMovtos((prev) =>
+        prev.map((m) =>
+          m.ODP === evento.ODP ? { ...m, ...evento } : m
+        )
+      )
+    })
+
+    return () => {
+      echo.leave('monitor-logistico')
+      console.log('Canal cerrado')
+    }
+  }, [])
 
   const obtenerDatos = async (fecha) => {
     try {
@@ -182,9 +207,9 @@ export default function Dashboard() {
 
   return (
     <>
-      <Head title="Dashboard Logístico" />
+      <Head title="Almacen" />
       <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">Dashboard Logístico</h1>
+        <h1 className="text-2xl font-bold mb-4">MONITOR TRÁFICO</h1>
 
         <div className="flex flex-wrap gap-4 items-center mb-4">
           <div>

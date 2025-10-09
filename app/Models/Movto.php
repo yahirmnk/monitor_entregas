@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Events\MovtoUpdated;
 use Illuminate\Database\Eloquent\Model;
 
 class Movto extends Model
@@ -37,6 +38,17 @@ class Movto extends Model
     public function Anden()
     {
         return $this->hasOne(Anden::class, 'IDAnden', 'IDMovto');
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($movto) {
+            event(new MovtoUpdated($movto));
+        });
+
+        static::updated(function ($movto) {
+            event(new MovtoUpdated($movto));
+        });
     }
 }
 

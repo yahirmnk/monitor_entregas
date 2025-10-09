@@ -7,6 +7,8 @@ use App\Models\Movto;
 use Carbon\Carbon;
 use Inertia\Inertia;
 
+use App\Events\MovtoUpdated;
+
 class DashboardController extends Controller
 {
     /**
