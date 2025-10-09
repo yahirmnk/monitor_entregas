@@ -26,7 +26,7 @@ class DashboardController extends Controller
                 'CasetaSerdan',
                 'MonitorAndenes',
                 'Anden'
-            ])->whereDate('FechaRegistro', $fecha);
+            ])->whereDate('CitaCarga', $fecha);
 
             $movtos = $query->get()->map(function ($movto) {
                 return [
