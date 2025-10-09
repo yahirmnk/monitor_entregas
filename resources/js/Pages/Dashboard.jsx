@@ -1,44 +1,46 @@
 import { useState, useEffect } from 'react'
 import { Head } from '@inertiajs/react'
-import { parseISO, differenceInMinutes, differenceInHours, isAfter } from 'date-fns'
+import { parseISO, differenceInMinutes, differenceInHours } from 'date-fns'
+import * as dateFnsTz from 'date-fns-tz'
 
-// CSS embebido directamente en el archivo
+// ==================== CSS =====================
 const estilos = `
 @keyframes blink {
   50% { opacity: 0.4; }
 }
 .estado-verde {
-  background-color: #16a34a; /* green-600 */
+  background-color: #16a34a;
   color: white;
   transition: all 0.4s ease;
 }
 .estado-naranja {
-  background-color: #f97316; /* orange-500 */
+  background-color: #f97316;
   animation: blink 1s infinite;
   color: black;
 }
 .estado-rojo {
-  background-color: #dc2626; /* red-600 */
-  animation: blink 1s infinite;
-  color: white;
-}
-.fila-roja td:not(:empty) {
   background-color: #dc2626;
-  color: white;
   animation: blink 1s infinite;
+  color: white;
 }
-`
+.rojo-fijo {
+  background-color: #991b1b;
+  color: white;
+}
+`;
 
-// Inyectar los estilos al <head> del documento
+// Inyectar estilos en el documento
 if (typeof document !== 'undefined') {
   const styleTag = document.createElement('style')
   styleTag.innerHTML = estilos
   document.head.appendChild(styleTag)
 }
 
+// ==================== FUNCIONES =====================
+
 // Formatear fecha a dd/mm/yyyy HH:mm:ss
 const formatearFecha = (valor) => {
-  if (!valor) return '-'
+  if (!valor) return 'No reportado'
   try {
     const [fecha, hora] = valor.split(' ')
     const [y, m, d] = fecha.split('-')
@@ -48,46 +50,88 @@ const formatearFecha = (valor) => {
   }
 }
 
-// Lógica de colores según condiciones de tiempo
+// ==================== LÓGICA DE COLORES =====================
 const getColorClase = (movto) => {
-  const ahora = new Date()
+  const zona = 'America/Mexico_City'
+
+  // Obtener hora actual ajustada a México
+  let ahora
+  try {
+    if (dateFnsTz && typeof dateFnsTz.utcToZonedTime === 'function') {
+      ahora = dateFnsTz.utcToZonedTime(new Date(), zona)
+    } else {
+      ahora = new Date(new Date().toLocaleString('en-US', { timeZone: zona }))
+    }
+  } catch (err) {
+    console.warn('Error al ajustar zona horaria, usando hora local:', err)
+    ahora = new Date()
+  }
+
   const citaDelta = movto.CitaDelta ? parseISO(movto.CitaDelta) : null
   const llegadaDelta = movto.LlegadaDelta ? parseISO(movto.LlegadaDelta) : null
   const entradaBascula = movto.EntradaBascula ? parseISO(movto.EntradaBascula) : null
   const llegadaAnden = movto.LlegadaAnden ? parseISO(movto.LlegadaAnden) : null
-  const salidaDelta = movto.SalidaDelta ? parseISO(movto.SalidaDelta) : null
   const inicioRuta = movto.InicioRuta ? parseISO(movto.InicioRuta) : null
+  const salidaPlanta = movto.SalidaPlanta ? parseISO(movto.SalidaPlanta) : null
 
   let clase = ''
 
-  // 1. Cita Delta vs Llegada Delta
-  if (citaDelta && llegadaDelta) {
-    const diff = differenceInMinutes(llegadaDelta, citaDelta)
-    if (diff <= 0) clase = 'estado-verde'
-    else if (diff > 120 && clase === '') clase = 'estado-rojo'
-    else if (diff > 60 && clase === '') clase = 'estado-naranja'
+  // 1. CITA DELTA vs LLEGADA DELTA
+  // Si aún no llega, se compara hora actual con la cita
+  if (citaDelta && !llegadaDelta) {
+    const diff = differenceInMinutes(ahora, citaDelta)
+
+    // Falta más de 1h
+    if (diff < -60) clase = ''
+    // Falta menos de 1h
+    else if (diff >= -60 && diff < 0) clase = 'estado-naranja'
+    // Ya pasó la hora, hasta 2h
+    else if (diff >= 0 && diff < 120) clase = 'estado-rojo'
+    // Más de 2h de retraso
+    else if (diff >= 120) clase = 'rojo-fijo'
+
+    // Si lleva más de 30 min en rojo → fijo
+    if (clase === 'estado-rojo' && diff >= 150) clase = 'rojo-fijo'
+  }
+  // Si ya llegó, comparar cita y llegada
+  else if (citaDelta && llegadaDelta) {
+    const diffLlegada = differenceInMinutes(llegadaDelta, citaDelta)
+    if (diffLlegada <= 0) clase = 'estado-verde'
+    else if (diffLlegada > 120) clase = 'rojo-fijo'
+    else if (diffLlegada > 60) clase = 'estado-naranja'
   }
 
-  // 2. Entrada Báscula → 20 minutos (sin sobrescribir verde o rojo)
-  if (clase === '' || clase === 'estado-naranja') {
-    if (entradaBascula && !llegadaAnden) {
-      const minutos = differenceInMinutes(ahora, entradaBascula)
-      if (minutos >= 20 && clase !== 'estado-verde') clase = 'estado-rojo'
-      else if (clase === '') clase = 'estado-naranja'
+  // 2. ENTRADA BÁSCULA vs LLEGADA ANDÉN
+  // Si hay entrada a báscula y no ha llegado al andén:
+  if (entradaBascula && !llegadaAnden) {
+    const minutos = differenceInMinutes(ahora, entradaBascula)
+    if (minutos < 20) clase = 'estado-naranja'
+    else if (minutos >= 20 && minutos < 50) clase = 'estado-rojo'
+    else if (minutos >= 50) clase = 'rojo-fijo'
+  }
+
+  // 3. INICIO RUTA vs SALIDA PLANTA
+  // Si hay inicio ruta y no salida:
+  if (inicioRuta) {
+    const diffInicio = differenceInMinutes(ahora, inicioRuta)
+
+    if (!salidaPlanta) {
+      if (diffInicio < -60) clase = ''
+      else if (diffInicio >= -60 && diffInicio < 0) clase = 'estado-naranja'
+      else if (diffInicio >= 0 && diffInicio < 120) clase = 'estado-rojo'
+      else if (diffInicio >= 120) clase = 'rojo-fijo'
+    } else {
+      const diffSalida = differenceInMinutes(salidaPlanta, inicioRuta)
+      if (diffSalida <= 0) clase = 'estado-verde'
+      else if (diffSalida > 0 && diffSalida <= 60) clase = 'estado-naranja'
+      else if (diffSalida > 60) clase = 'rojo-fijo'
     }
-  }
-
-  // 3. Salida Delta vs Inicio Ruta (solo fila completa)
-  if (salidaDelta && inicioRuta) {
-    const diffHoras = differenceInHours(inicioRuta, salidaDelta)
-    if (diffHoras <= 1) return 'fila-roja'
-    else if (diffHoras <= 2 && clase === '') clase = 'estado-naranja'
-    else if (isAfter(inicioRuta, salidaDelta) && clase === '') clase = 'estado-verde'
   }
 
   return clase
 }
 
+// ==================== COMPONENTE PRINCIPAL =====================
 export default function Dashboard() {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
     const hoy = new Date()
@@ -96,56 +140,49 @@ export default function Dashboard() {
   const [movtos, setMovtos] = useState([])
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
 
-  // Intervalo fijo de actualización (milisegundos)
-  const INTERVALO_ACTUALIZACION = 300000
+  const INTERVALO_ACTUALIZACION = 300000 // 5 minutos
 
   useEffect(() => {
-    console.log("Componente montado. Fecha seleccionada:", fechaSeleccionada)
+    console.log('Componente montado. Fecha seleccionada:', fechaSeleccionada)
     obtenerDatos(fechaSeleccionada)
 
     const timer = setInterval(() => {
-      console.log("Ejecutando actualización automática...")
+      console.log('Actualizando datos automáticamente...')
       obtenerDatos(fechaSeleccionada)
     }, INTERVALO_ACTUALIZACION)
 
     return () => {
-      console.log("Componente desmontado o fecha cambiada, limpiando intervalo.")
+      console.log('Componente desmontado o fecha cambiada, limpiando intervalo.')
       clearInterval(timer)
     }
   }, [fechaSeleccionada])
 
   const obtenerDatos = async (fecha) => {
     try {
-      console.log("Solicitando datos del backend para la fecha:", fecha)
+      console.log('Solicitando datos del backend para la fecha:', fecha)
       const res = await fetch(`/api/monitor/json?fecha=${fecha}`)
-
-      if (!res.ok) {
-        console.error("Error HTTP en la respuesta:", res.status)
-        throw new Error(`Error HTTP ${res.status}`)
-      }
+      if (!res.ok) throw new Error(`Error HTTP ${res.status}`)
 
       const data = await res.json()
-
       if (data && Array.isArray(data.data)) {
-        console.log("Datos recibidos:", data.data.length, "registros")
+        console.log('Datos recibidos:', data.data.length, 'registros')
         setMovtos(data.data)
       } else {
-        console.warn("Formato inesperado de respuesta:", data)
+        console.warn('Formato inesperado:', data)
         setMovtos([])
       }
 
-      setUltimaActualizacion(new Date().toLocaleTimeString())
-      console.log("Actualización completada correctamente:", new Date().toLocaleTimeString())
+      setUltimaActualizacion(new Date().toLocaleTimeString('es-MX'))
+      console.log('Actualización completada:', new Date().toLocaleTimeString('es-MX'))
     } catch (err) {
-      console.error("Error al refrescar datos:", err)
-      setMovtos([]) // Evita quedarse con datos corruptos
+      console.error('Error al obtener datos:', err)
+      setMovtos([])
     }
   }
 
   return (
     <>
       <Head title="Dashboard Logístico" />
-
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">Dashboard Logístico</h1>
 
@@ -156,13 +193,12 @@ export default function Dashboard() {
               type="date"
               value={fechaSeleccionada}
               onChange={(e) => {
-                console.log("Fecha seleccionada manualmente:", e.target.value)
+                console.log('Fecha seleccionada manualmente:', e.target.value)
                 setFechaSeleccionada(e.target.value)
               }}
               className="border rounded px-2 py-1"
             />
           </div>
-
           <div className="text-sm text-gray-600 italic">
             Última actualización: {ultimaActualizacion || '---'}
           </div>
@@ -188,12 +224,12 @@ export default function Dashboard() {
                 const color = getColorClase(m)
                 return (
                   <tr key={i} className={`text-center ${color}`}>
-                    <td className="border px-2 py-1">{m.ODP || '-'}</td>
+                    <td className="border px-2 py-1">{m.ODP || 'No reportado'}</td>
                     <td className="border px-2 py-1">{formatearFecha(m.CitaDelta)}</td>
                     <td className="border px-2 py-1">{formatearFecha(m.LlegadaDelta)}</td>
                     <td className="border px-2 py-1">{formatearFecha(m.SalidaDelta)}</td>
                     <td className="border px-2 py-1">{formatearFecha(m.EntradaBascula)}</td>
-                    <td className="border px-2 py-1">{m.NoAnden || '-'}</td>
+                    <td className="border px-2 py-1">{m.NoAnden || 'No reportado'}</td>
                     <td className="border px-2 py-1">{formatearFecha(m.LlegadaAnden)}</td>
                     <td className="border px-2 py-1">{formatearFecha(m.SalidaPlanta)}</td>
                     <td className="border px-2 py-1">{formatearFecha(m.InicioRuta)}</td>

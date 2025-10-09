@@ -10,7 +10,7 @@ use Inertia\Inertia;
 class DashboardController extends Controller
 {
     /**
-     * Muestra el dashboard principal (vista con Inertia).
+     * Muestra el dashboard prinncipal.
      */
     public function index(Request $request)
     {
@@ -61,9 +61,8 @@ class DashboardController extends Controller
         }
     }
 
-    /**
-     * Endpoint API en formato JSON limpio (para pruebas o conexión React).
-     */
+    //JSON limpio (para pruebas o conexión React).
+
     public function json(Request $request)
     {
         try {
@@ -74,7 +73,7 @@ class DashboardController extends Controller
                 'Bascula',
                 'CasetaSerdan',
                 'MonitorAndenes',
-                'Anden'
+                'Anden',
             ])->whereDate('FechaRegistro', $fecha);
 
             $datos = $query->get()->map(function ($movto) {
@@ -86,8 +85,8 @@ class DashboardController extends Controller
                     'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null,
                     'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
                     'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null,
-                    'SalidaPlanta'   => $movto->CasetaSerdan?->HoraSalida ?? $movto->Bascula?->HoraSalidaBascula ?? null,
-                    'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null,
+                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBasEmbarque ?? null,
+                    'InicioRuta'     => $movto->FechaProgramacion ?? null,
                 ];
             });
 

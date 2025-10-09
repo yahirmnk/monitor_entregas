@@ -11,7 +11,7 @@ class Movto extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'ODP', 'CitaDelta', 'CitaAnden', 'FechaRegistro'
+        'ODP', 'CitaDelta', 'CitaAnden', 'FechaRegistro', 'FechaProgramacion'
     ];
 
     public function Delta()
