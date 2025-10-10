@@ -246,7 +246,9 @@ export default function Dashboard() {
           </thead>
           <tbody>
             {movtos.length > 0 ? (
-              movtos.map((m, i) => {
+              movtos
+              .filter((m) => !m.SalidaPlanta)
+              .map((m, i) => {
                 const color = getColorClase(m)
                 return (
                   <tr key={i} className={`text-center ${color}`}>
