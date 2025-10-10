@@ -108,9 +108,9 @@ const getColorClase = (movto) => {
   // Si hay entrada a báscula y no ha llegado al andén:
   if (entradaBascula && !llegadaAnden) {
     const minutos = differenceInMinutes(ahora, entradaBascula)
-    if (minutos < 20) clase = 'estado-naranja'
-    else if (minutos >= 20 && minutos < 50) clase = 'estado-rojo'
-    else if (minutos >= 50) clase = 'rojo-fijo'
+    if (minutos < 20) colorFila = 'estado-naranja'
+    else if (minutos >= 20 && minutos < 50) colorFila = 'estado-rojo'
+    else if (minutos >= 50) colorFila = 'rojo-fijo'
   }
 
   // 3. INICIO RUTA vs SALIDA PLANTA
