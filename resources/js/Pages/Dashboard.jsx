@@ -144,7 +144,8 @@ export default function Dashboard() {
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
 
   //const INTERVALO_ACTUALIZACION = 300000 // 5 minutos
-  const INTERVALO_ACTUALIZACION = 180000 //3 minutos
+  //const INTERVALO_ACTUALIZACION = 180000 //3 minutos
+  const INTERVALO_ACTUALIZACION = 60000 // 1 minuto 
 
   useEffect(() => {
     console.log('Componente montado. Fecha seleccionada:', fechaSeleccionada)

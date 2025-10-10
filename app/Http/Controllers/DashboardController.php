@@ -7,7 +7,7 @@ use App\Models\Movto;
 use Carbon\Carbon;
 use Inertia\Inertia;
 
-use App\Events\MovtoUpdated;
+//use App\Events\MovtoUpdated;
 
 class DashboardController extends Controller
 {
@@ -76,7 +76,7 @@ class DashboardController extends Controller
                 'CasetaSerdan',
                 'MonitorAndenes',
                 'Anden',
-            ])->whereDate('FechaRegistro', $fecha);
+            ])->whereDate('CitaCarga', $fecha);
 
             $datos = $query->get()->map(function ($movto) {
                 return [
