@@ -12,21 +12,29 @@ use Inertia\Inertia;
 class DashboardController extends Controller
 {
     /**
-     * Muestra el dashboard prinncipal.
+     * Vista principal con Inertia.
      */
     public function index(Request $request)
     {
         try {
             $fecha = $request->input('fecha', now()->toDateString());
+            $fechaInicio = $request->input('fecha_inicio');
+            $fechaFin = $request->input('fecha_fin');
 
-            
             $query = Movto::with([
                 'Delta',
                 'Bascula',
                 'CasetaSerdan',
                 'MonitorAndenes',
                 'Anden'
-            ])->whereDate('CitaCarga', $fecha);
+            ]);
+
+            // Aplicar filtro por rango o por fecha única
+            if ($fechaInicio && $fechaFin) {
+                $query->whereBetween('CitaCarga', [$fechaInicio, $fechaFin]);
+            } else {
+                $query->whereDate('CitaCarga', $fecha);
+            }
 
             $movtos = $query->get()->map(function ($movto) {
                 return [
@@ -37,16 +45,16 @@ class DashboardController extends Controller
                     'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null,
                     'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
                     'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null,
-                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula?? $movto->CasetaSerdan?->HoraSalida ?? null,
+                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? $movto->CasetaSerdan?->HoraSalida ?? null,
                     'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null,
                 ];
             });
 
-            $fechaTexto = ucfirst(
-                Carbon::parse($fecha)
-                    ->locale('es')
-                    ->translatedFormat('l d \\d\\e F Y')
-            );
+            // Texto legible de la fecha consultada
+            $fechaTexto = $fechaInicio && $fechaFin
+                ? "Del " . Carbon::parse($fechaInicio)->locale('es')->translatedFormat('d \\d\\e F') .
+                  " al " . Carbon::parse($fechaFin)->locale('es')->translatedFormat('d \\d\\e F Y')
+                : ucfirst(Carbon::parse($fecha)->locale('es')->translatedFormat('l d \\d\\e F Y'));
 
             return Inertia::render('Dashboard', [
                 'movtos' => $movtos,
@@ -63,12 +71,15 @@ class DashboardController extends Controller
         }
     }
 
-    //JSON limpio (para pruebas o conexión React).
-
+    /**
+     * Endpoint JSON consumido por React (Dashboard.jsx)
+     */
     public function json(Request $request)
     {
         try {
             $fecha = $request->input('fecha', now()->toDateString());
+            $fechaInicio = $request->input('fecha_inicio');
+            $fechaFin = $request->input('fecha_fin');
 
             $query = Movto::with([
                 'Delta',
@@ -76,7 +87,14 @@ class DashboardController extends Controller
                 'CasetaSerdan',
                 'MonitorAndenes',
                 'Anden',
-            ])->whereDate('CitaCarga', $fecha);
+            ]);
+
+            // Filtro por rango o fecha única
+            if ($fechaInicio && $fechaFin) {
+                $query->whereBetween('CitaCarga', [$fechaInicio, $fechaFin]);
+            } else {
+                $query->whereDate('CitaCarga', $fecha);
+            }
 
             $datos = $query->get()->map(function ($movto) {
                 return [
@@ -92,16 +110,17 @@ class DashboardController extends Controller
                 ];
             });
 
+            $fechaTexto = $fechaInicio && $fechaFin
+                ? "Del " . Carbon::parse($fechaInicio)->locale('es')->translatedFormat('d \\d\\e F') .
+                  " al " . Carbon::parse($fechaFin)->locale('es')->translatedFormat('d \\d\\e F Y')
+                : ucfirst(Carbon::parse($fecha)->locale('es')->translatedFormat('l d \\d\\e F Y'));
+
             return response()->json([
-                'fecha_consultada' => $fecha,
-                'fecha_texto' => ucfirst(
-                    Carbon::parse($fecha)
-                        ->locale('es')
-                        ->translatedFormat('l d \\d\\e F Y')
-                ),
+                'fecha_consultada' => $fechaInicio && $fechaFin ? "$fechaInicio - $fechaFin" : $fecha,
+                'fecha_texto' => $fechaTexto,
                 'total' => $datos->count(),
                 'data' => $datos,
-                'sin_datos' => $datos->isEmpty() ? 'No hay registros para la fecha seleccionada' : false,
+                'sin_datos' => $datos->isEmpty() ? 'No hay registros para la fecha o rango seleccionado' : false,
             ]);
         } catch (\Exception $e) {
             return response()->json([

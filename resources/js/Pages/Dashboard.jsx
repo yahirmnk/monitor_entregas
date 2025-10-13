@@ -45,7 +45,7 @@ const formatearFecha = (valor) => {
   }
 }
 
-// Lógica de colores (versión final)
+// Lógica de colores
 const getColorClase = (movto) => {
   const zona = 'America/Mexico_City'
   let ahora
@@ -63,7 +63,6 @@ const getColorClase = (movto) => {
   const inicioRuta = movto.InicioRuta ? parseISO(movto.InicioRuta) : null
   const salidaPlanta = movto.SalidaPlanta ? parseISO(movto.SalidaPlanta) : null
 
-  // Colores separados por celda
   const colorCelda = {
     llegadaDelta: '',
     llegadaAnden: '',
@@ -92,18 +91,9 @@ const getColorClase = (movto) => {
   // InicioRuta → SalidaPlanta
   if (inicioRuta && !salidaPlanta) {
     const diff = differenceInMinutes(ahora, inicioRuta)
-
-    // 1 hora antes hasta 2 horas después → naranja solo la celda
-    if (diff >= -60 && diff < 60) {
-      colorCelda.salidaPlanta = 'estado-naranja'
-    }
-
-    // A partir de 2 horas después → toda la fila roja parpadeante
-    if (diff >= 60) {
-      colorFila = 'estado-rojo'
-    }
+    if (diff >= -60 && diff < 120) colorCelda.salidaPlanta = 'estado-naranja'
+    if (diff >= 120) colorFila = 'estado-rojo'
   }
-
 
   return { colorCelda, colorFila }
 }
@@ -114,32 +104,81 @@ export default function Dashboard() {
     const hoy = new Date()
     return hoy.toISOString().split('T')[0]
   })
+  const [fechaInicio, setFechaInicio] = useState('')
+  const [fechaFin, setFechaFin] = useState('')
   const [movtos, setMovtos] = useState([])
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
   const INTERVALO_ACTUALIZACION = 60000 // 1 minuto 
 
   useEffect(() => {
-    obtenerDatos(fechaSeleccionada)
-    const timer = setInterval(() => obtenerDatos(fechaSeleccionada), INTERVALO_ACTUALIZACION)
-    return () => clearInterval(timer)
-  }, [fechaSeleccionada])
+    console.log('Componente montado. Fecha actual:', fechaSeleccionada)
+    obtenerDatos()
+
+    const timer = setInterval(() => {
+      console.log('Actualización automática cada minuto...')
+      obtenerDatos()
+    }, INTERVALO_ACTUALIZACION)
+
+    return () => {
+      console.log('Desmontando componente, limpiando intervalos.')
+      clearInterval(timer)
+    }
+  }, [fechaSeleccionada, fechaInicio, fechaFin])
 
   // Escucha de eventos en tiempo real
   useEffect(() => {
+    console.log('Escuchando canal privado: monitor-logistico')
     const channel = echo.private('monitor-logistico')
+
     channel.listen('MovtoUpdated', (evento) => {
-      setMovtos((prev) => prev.map((m) => (m.ODP === evento.ODP ? { ...m, ...evento } : m)))
+      console.log('Evento recibido desde servidor:', evento)
+      setMovtos((prev) =>
+        prev.map((m) => (m.ODP === evento.ODP ? { ...m, ...evento } : m))
+      )
     })
-    return () => echo.leave('monitor-logistico')
+
+    return () => {
+      echo.leave('monitor-logistico')
+      console.log('Canal cerrado: monitor-logistico')
+    }
   }, [])
 
-  const obtenerDatos = async (fecha) => {
+  const obtenerDatos = async () => {
     try {
-      const res = await fetch(`/api/monitor/json?fecha=${fecha}`)
+      let url = '/api/monitor/json'
+
+      if (fechaInicio && fechaFin) {
+        url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
+        console.log('Consultando rango de fechas:', fechaInicio, 'a', fechaFin)
+      } else if (fechaSeleccionada) {
+        url += `?fecha=${fechaSeleccionada}`
+        console.log('Consultando fecha única:', fechaSeleccionada)
+      } else {
+        const hoy = new Date().toISOString().split('T')[0]
+        url += `?fecha=${hoy}`
+        console.log('Sin selección, usando fecha actual:', hoy)
+      }
+
+      console.log('Solicitud enviada a:', url)
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`Error HTTP ${res.status}`)
+
       const data = await res.json()
-      if (data && Array.isArray(data.data)) setMovtos(data.data)
-      setUltimaActualizacion(new Date().toLocaleTimeString('es-MX'))
-    } catch {
+      console.log('Respuesta recibida:', data)
+
+      if (data && Array.isArray(data.data)) {
+        setMovtos(data.data)
+        console.log('Total de registros:', data.data.length)
+      } else {
+        console.warn('Formato inesperado:', data)
+        setMovtos([])
+      }
+
+      const hora = new Date().toLocaleTimeString('es-MX')
+      setUltimaActualizacion(hora)
+      console.log('Actualización completada a las:', hora)
+    } catch (error) {
+      console.error('Error al obtener datos:', error)
       setMovtos([])
     }
   }
@@ -152,14 +191,58 @@ export default function Dashboard() {
 
         <div className="flex flex-wrap gap-4 items-center mb-4">
           <div>
-            <label className="block text-sm font-medium">Fecha</label>
+            <label className="block text-sm font-medium">Fecha única</label>
             <input
               type="date"
               value={fechaSeleccionada}
-              onChange={(e) => setFechaSeleccionada(e.target.value)}
+              onChange={(e) => {
+                console.log('Cambio de fecha única:', e.target.value)
+                setFechaSeleccionada(e.target.value)
+                setFechaInicio('')
+                setFechaFin('')
+              }}
               className="border rounded px-2 py-1"
             />
           </div>
+
+          <div>
+            <label className="block text-sm font-medium">Desde</label>
+            <input
+              type="date"
+              value={fechaInicio}
+              onChange={(e) => {
+                console.log('Cambio de fecha inicio:', e.target.value)
+                setFechaInicio(e.target.value)
+                setFechaSeleccionada('')
+              }}
+              className="border rounded px-2 py-1"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium">Hasta</label>
+            <input
+              type="date"
+              value={fechaFin}
+              onChange={(e) => {
+                console.log('Cambio de fecha fin:', e.target.value)
+                setFechaFin(e.target.value)
+                setFechaSeleccionada('')
+              }}
+              className="border rounded px-2 py-1"
+            />
+          </div>
+
+          <button
+            onClick={() => {
+              console.log('Cargando fechas del filtro de rango de fecha')
+              obtenerDatos()
+            }}
+            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+          >
+            Filtrar
+          </button>
+
           <div className="text-sm text-gray-600 italic">
             Última actualización: {ultimaActualizacion || '---'}
           </div>
@@ -208,7 +291,7 @@ export default function Dashboard() {
             ) : (
               <tr>
                 <td colSpan="9" className="text-center py-3 text-gray-500">
-                  No hay registros para la fecha seleccionada
+                  No hay registros para la fecha seleccionada o rango
                 </td>
               </tr>
             )}
