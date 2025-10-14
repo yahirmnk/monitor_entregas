@@ -50,16 +50,17 @@ class DashboardController extends Controller
             ]);
             $movtos = $query->get()->map(function ($movto) {
                 return [
-                    'ODP'            => $movto->ODP,
-                    'CitaDelta'      => $movto->CitaDelta ?? null,
-                    'LlegadaDelta'   => $movto->Delta?->LlegadaDelta ?? null,
-                    'SalidaDelta'    => $movto->Delta?->SalidaDelta ?? null,
-                    'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null,
-                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
-                    'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null,
-                    'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, 
-                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? $movto->CasetaSerdan?->HoraSalida ?? null,
-                    'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null,
+                    'ODP'            => $movto->ODP, //ODP
+                    'CitaDelta'      => $movto->CitaDelta ?? null, //Cita Delta
+                    'LlegadaDelta'   => $movto->Delta?->LlegadaDelta ?? null, //Llegada Delta
+                    'SalidaDelta'    => $movto->Delta?->SalidaDelta ?? null, // Salida Delta
+                    'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null, // Entrada Báscula
+                    'SalidaBascula'  => $movto->Bascula?->HorsaSalidaBascula ?? null, // Salida Báscula 
+                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null, //No. Andén
+                    'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null, //Llegada Andén 
+                    'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, //Salida Andén
+                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? $movto->CasetaSerdan?->HoraSalida ?? null, //Salida Planta
+                    'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null, // Inicio Ruta
                 ];
             });
 
@@ -111,16 +112,17 @@ class DashboardController extends Controller
 
             $datos = $query->get()->map(function ($movto) {
                 return [
-                    'ODP'            => $movto->ODP,
-                    'CitaDelta'      => $movto->CitaDelta ?? null,
-                    'LlegadaDelta'   => $movto->Delta?->LlegadaDelta ?? null,
-                    'SalidaDelta'    => $movto->Delta?->SalidaDelta ?? null,
-                    'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null,
-                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
-                    'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null,
-                    'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, 
-                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBasEmbarque ?? null,
-                    'InicioRuta'     => $movto->FechaProgramacion ?? null,
+                    'ODP'            => $movto->ODP, //ODP
+                    'CitaDelta'      => $movto->CitaDelta ?? null, //Cita Delta
+                    'LlegadaDelta'   => $movto->Delta?->LlegadaDelta ?? null, //Llegada Delta
+                    'SalidaDelta'    => $movto->Delta?->SalidaDelta ?? null, // Salida Delta
+                    'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null, // Entrada Báscula
+                    'SalidaBascula'  => $movto->Bascula?->HorsaSalidaBascula ?? null, // Salida Báscula 
+                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null, //No. Andén
+                    'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null, //Llegada Andén 
+                    'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, //Salida Andén
+                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? $movto->CasetaSerdan?->HoraSalida ?? null, //Salida Planta
+                    'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null, // Inicio Ruta
                 ];
             });
 

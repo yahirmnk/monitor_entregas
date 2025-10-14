@@ -58,42 +58,120 @@ const getColorClase = (movto) => {
 
   const citaDelta = movto.CitaDelta ? parseISO(movto.CitaDelta) : null
   const llegadaDelta = movto.LlegadaDelta ? parseISO(movto.LlegadaDelta) : null
+  const salidaDelta = movto.SalidaDelta ? parseISO(movto.SalidaDelta) : null
   const entradaBascula = movto.EntradaBascula ? parseISO(movto.EntradaBascula) : null
+  const salidaBascula = movto.SalidaBascula ? parseISO(movto.SalidaBascula) : null
   const llegadaAnden = movto.LlegadaAnden ? parseISO(movto.LlegadaAnden) : null
+  const salidaAnden = movto.SalidaAnden ? parseISO(movto.SalidaAnden) : null
   const inicioRuta = movto.InicioRuta ? parseISO(movto.InicioRuta) : null
   const salidaPlanta = movto.SalidaPlanta ? parseISO(movto.SalidaPlanta) : null
 
   const colorCelda = {
     llegadaDelta: '',
+    salidaDelta: '',
+    entradaBascula: '',
+    salidaBascula: '',
     llegadaAnden: '',
+    salidaAnden: '',
     salidaPlanta: ''
   }
+
   let colorFila = ''
 
-  // CitaDelta → LlegadaDelta
+
+  // CitaDelta → LlegadaDelta (regla: -2h y -1h antes de cita)
   if (citaDelta && !llegadaDelta) {
-    const diff = differenceInMinutes(ahora, citaDelta)
-    if (diff >= -60 && diff < 0) colorCelda.llegadaDelta = 'estado-naranja'
-    else if (diff >= 0) colorCelda.llegadaDelta = 'estado-rojo'
+    const diff = differenceInMinutes(citaDelta, ahora) // minutos que faltan para la cita
+
+    // Faltan entre 120 y 60 minutos → naranja
+    if (diff <= 120 && diff > 60) {
+      colorCelda.llegadaDelta = 'estado-naranja'
+    }
+    // Faltan menos de 60 minutos → rojo
+    else if (diff <= 60 && diff >= 0) {
+      colorCelda.llegadaDelta = 'estado-rojo'
+    }
   } else if (llegadaDelta) {
-    colorCelda.llegadaDelta = 'estado-verde'//asi llegue tarde la pinta en verde
+    // Una vez registrada la llegada, pasa a verde y se detiene el parpadeo
+    colorCelda.llegadaDelta = 'estado-verde'
   }
 
-  // EntradaBascula → LlegadaAnden
-  if (entradaBascula && !llegadaAnden) {
-    const diff = differenceInMinutes(ahora, entradaBascula)
-    if (diff < 20) colorCelda.llegadaAnden = 'estado-naranja'
-    else if (diff >= 20) colorCelda.llegadaAnden = 'estado-rojo'
-  } else if (llegadaAnden) {
-    colorCelda.llegadaAnden = 'estado-verde'
+  // LlegadaDelta → SalidaDelta (cronómetro de 4 horas)
+  if (llegadaDelta && !movto.SalidaDelta) {
+    const diff = differenceInMinutes(ahora, llegadaDelta) // minutos desde la llegada
+
+    // Primeras 2 horas → sin color
+    if (diff >= 120 && diff < 180) {
+      // Entre 2h y 3h → naranja
+      colorCelda.salidaDelta = 'estado-naranja'
+    } 
+    else if (diff >= 180 && diff < 240) {
+      // Entre 3h y 4h → rojo
+      colorCelda.salidaDelta = 'estado-rojo'
+    } 
+    else if (diff >= 240) {
+      // Más de 4h → sigue en rojo 
+      colorCelda.salidaDelta = 'estado-rojo'
+    }
+  } else if (movto.SalidaDelta) {
+    // Si ya tiene salida, pasa a verde
+    colorCelda.salidaDelta = 'estado-verde'
+  }
+
+  // SalidaDelta → EntradaBascula (Estancia: 20 minutos)
+  if (salidaDelta && !entradaBascula) {
+    const diff = differenceInMinutes(ahora, salidaDelta) // minutos transcurridos desde Salida Delta
+
+    // Entre 10 y 20 minutos → naranja
+    if (diff >= 10 && diff < 20) {
+      colorCelda.entradaBascula = 'estado-naranja'
+    } 
+    // Más de 20 minutos → rojo
+    else if (diff >= 20) {
+      colorCelda.entradaBascula = 'estado-rojo'
+    }
+  } else if (entradaBascula) {
+    // Si ya tiene registro, pasa a verde (detiene parpadeo)
+    colorCelda.entradaBascula = 'estado-verde'
+  }
+
+  // EntradaBascula → SalidaBascula (Estancia: 20 minutos)
+  if (entradaBascula && !movto.SalidaBascula) {
+    const diff = differenceInMinutes(ahora, entradaBascula) // minutos desde entrada
+
+    // Entre 10 y 20 minutos → rojo parpadeando
+    if (diff >= 10) {
+      colorCelda.salidaBascula = 'estado-rojo'
+    }
+  } else if (movto.SalidaBascula) {
+    // Si ya tiene registro de salida, verde (detiene parpadeo)
+    colorCelda.salidaBascula = 'estado-verde'
+  }
+
+  // LlegadaAnden → SalidaAnden (Estancia: 2 horas)
+  if (llegadaAnden && !salidaAnden) {
+    const diff = differenceInMinutes(ahora, llegadaAnden) // minutos desde la llegada al andén
+
+    // De 1h en adelante (60 min) → rojo parpadeando
+    if (diff >= 60) {
+      colorCelda.salidaAnden = 'estado-rojo'
+    }
+  } else if (salidaAnden) {
+    // Si ya hay registro de salida, verde fijo
+    colorCelda.salidaAnden = 'estado-verde'
   }
 
   // InicioRuta → SalidaPlanta
   if (inicioRuta && !salidaPlanta) {
-    const diff = differenceInMinutes(ahora, inicioRuta)
-    if (diff >= -60 && diff < 120) colorCelda.salidaPlanta = 'estado-naranja'
-    if (diff >= 120) colorFila = 'estado-rojo'
+  const diff = differenceInMinutes(ahora, inicioRuta)
+  
+  if (diff >= -120 && diff < -60) {
+    colorCelda.salidaPlanta = 'estado-naranja'
   }
+  if (diff >= -60 && diff < 0) {
+    colorCelda.salidaPlanta = 'estado-rojo'
+  }
+}
 
   return { colorCelda, colorFila }
 }
@@ -256,6 +334,7 @@ export default function Dashboard() {
               <th className="border px-2 py-1">Llegada Delta</th>
               <th className="border px-2 py-1">Salida Delta</th>
               <th className="border px-2 py-1">Entrada Báscula</th>
+              <th className="border px-2 py-1">Salida Báscula</th>
               <th className="border px-2 py-1">No. Andén</th>
               <th className="border px-2 py-1">Llegada Andén</th>
               <th className="border px-2 py-1">Salida Andén</th>
@@ -276,12 +355,20 @@ export default function Dashboard() {
                       <td className={`border px-2 py-1 ${colorCelda.llegadaDelta}`}>
                         {formatearFecha(m.LlegadaDelta)}
                       </td>
-                      <td className="border px-2 py-1">{formatearFecha(m.SalidaDelta)}</td>
-                      <td className="border px-2 py-1">{formatearFecha(m.EntradaBascula)}</td>
+                      <td className={`border px-2 py-1 ${colorCelda.salidaDelta}`}>
+                        {formatearFecha(m.SalidaDelta)}
+                      </td>
+                      <td className={`border px-2 py-1 ${colorCelda.entradaBascula}`}>
+                        {formatearFecha(m.EntradaBascula)}
+                      </td>
+                      <td className={`border px-2 py-1 ${colorCelda.salidaBascula}`}>
+                        {formatearFecha(m.SalidaBascula)}
+                      </td>
                       <td className="border px-2 py-1">{m.NoAnden || 'No reportado'}</td>
                       <td className={`border px-2 py-1 ${colorCelda.llegadaAnden}`}>
                         {formatearFecha(m.LlegadaAnden)}
                       </td>
+                      <td className="border px-2 py-1">{formatearFecha(m.SalidaAnden)}</td>
                       <td className={`border px-2 py-1 ${colorCelda.salidaPlanta}`}>
                         {formatearFecha(m.SalidaPlanta)}
                       </td>
