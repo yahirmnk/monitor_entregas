@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Movto;
 use Carbon\Carbon;
 use Inertia\Inertia;
-
+use Illuminate\Support\Facades\Log;
 //use App\Events\MovtoUpdated;
 
 class DashboardController extends Controller
@@ -27,7 +27,14 @@ class DashboardController extends Controller
                 'CasetaSerdan',
                 'MonitorAndenes',
                 'Anden'
-            ]);
+            ])
+            ->where(function ($q){
+                $q->where('es_principal', 1)
+                    ->orWhere(function ($sub) {
+                        $sub->whereNull('es_principal')
+                            ->whereNull('Consolidado');
+                    });
+            });
 
             // Aplicar filtro por rango o por fecha única
             if ($fechaInicio && $fechaFin) {
@@ -35,7 +42,12 @@ class DashboardController extends Controller
             } else {
                 $query->whereDate('CitaCarga', $fecha);
             }
-
+            Log::info('Filtro aplicado de forma correcta',[
+                'fecha' => $fecha,
+                'fechaInicio' => $fechaInicio,
+                'fechaFin' => $fechaFin,
+                'totalMovtos' => $query->count(),
+            ]);
             $movtos = $query->get()->map(function ($movto) {
                 return [
                     'ODP'            => $movto->ODP,
