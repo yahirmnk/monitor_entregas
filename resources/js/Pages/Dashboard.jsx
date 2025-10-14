@@ -76,7 +76,7 @@ const getColorClase = (movto) => {
     if (diff >= -60 && diff < 0) colorCelda.llegadaDelta = 'estado-naranja'
     else if (diff >= 0) colorCelda.llegadaDelta = 'estado-rojo'
   } else if (llegadaDelta) {
-    colorCelda.llegadaDelta = 'estado-verde'
+    colorCelda.llegadaDelta = 'estado-verde'//asi llegue tarde la pinta en verde
   }
 
   // EntradaBascula → LlegadaAnden
@@ -258,6 +258,7 @@ export default function Dashboard() {
               <th className="border px-2 py-1">Entrada Báscula</th>
               <th className="border px-2 py-1">No. Andén</th>
               <th className="border px-2 py-1">Llegada Andén</th>
+              <th className="border px-2 py-1">Salida Andén</th>
               <th className="border px-2 py-1">Salida Planta</th>
               <th className="border px-2 py-1">Inicio Ruta</th>
             </tr>

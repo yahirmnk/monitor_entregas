@@ -57,6 +57,7 @@ class DashboardController extends Controller
                     'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null,
                     'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
                     'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null,
+                    'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, 
                     'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? $movto->CasetaSerdan?->HoraSalida ?? null,
                     'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null,
                 ];
@@ -117,6 +118,7 @@ class DashboardController extends Controller
                     'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null,
                     'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
                     'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null,
+                    'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, 
                     'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBasEmbarque ?? null,
                     'InicioRuta'     => $movto->FechaProgramacion ?? null,
                 ];
