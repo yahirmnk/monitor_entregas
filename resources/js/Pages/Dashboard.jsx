@@ -4,14 +4,15 @@ import { parseISO, differenceInMinutes } from 'date-fns'
 import * as dateFnsTz from 'date-fns-tz'
 import echo from '../echo'
 
-// CSS 
+// === CSS de estados dinámicos ===
+// NO SE APLICA COLORVERDE SOLO BLANCO
 const estilos = `
 @keyframes blink {
   50% { opacity: 0.4; }
 }
 .estado-verde {
-  background-color: #16a34a;
-  color: white;
+  background-color: #e9fcf0ff; 
+  color: black;
   transition: all 0.4s ease;
 }
 .estado-naranja {
@@ -26,14 +27,14 @@ const estilos = `
 }
 `;
 
-// Inyectar estilos en el documento
+// === Inyectar estilos al documento ==
 if (typeof document !== 'undefined') {
   const styleTag = document.createElement('style')
   styleTag.innerHTML = estilos
   document.head.appendChild(styleTag)
 }
 
-// Formatear fecha a dd/mm/yyyy HH:mm:ss
+// == Función de formato de fecha ===
 const formatearFecha = (valor) => {
   if (!valor) return 'No reportado'
   try {
@@ -45,7 +46,7 @@ const formatearFecha = (valor) => {
   }
 }
 
-// Lógica de colores
+// === Lógica de colores y tiempos =
 const getColorClase = (movto) => {
   const zona = 'America/Mexico_City'
   let ahora
@@ -63,8 +64,8 @@ const getColorClase = (movto) => {
   const salidaBascula = movto.SalidaBascula ? parseISO(movto.SalidaBascula) : null
   const llegadaAnden = movto.LlegadaAnden ? parseISO(movto.LlegadaAnden) : null
   const salidaAnden = movto.SalidaAnden ? parseISO(movto.SalidaAnden) : null
-  const inicioRuta = movto.InicioRuta ? parseISO(movto.InicioRuta) : null
   const salidaPlanta = movto.SalidaPlanta ? parseISO(movto.SalidaPlanta) : null
+  const inicioRuta = movto.InicioRuta ? parseISO(movto.InicioRuta) : null
 
   const colorCelda = {
     llegadaDelta: '',
@@ -73,110 +74,68 @@ const getColorClase = (movto) => {
     salidaBascula: '',
     llegadaAnden: '',
     salidaAnden: '',
+    inicioRuta: '',
     salidaPlanta: ''
   }
 
   let colorFila = ''
 
-
-  // CitaDelta → LlegadaDelta (regla: -2h y -1h antes de cita)
+  // === 1. CitaDelta → LlegadaDelta ===
   if (citaDelta && !llegadaDelta) {
-    const diff = differenceInMinutes(citaDelta, ahora) // minutos que faltan para la cita
-
-    // Faltan entre 120 y 60 minutos → naranja
-    if (diff <= 120 && diff > 60) {
-      colorCelda.llegadaDelta = 'estado-naranja'
-    }
-    // Faltan menos de 60 minutos → rojo
-    else if (diff <= 60 && diff >= 0) {
-      colorCelda.llegadaDelta = 'estado-rojo'
-    }
+    const diff = differenceInMinutes(citaDelta, ahora)
+    if (diff <= 120 && diff > 60) colorCelda.llegadaDelta = 'estado-naranja' // -2h
+    else if (diff <= 60 && diff >= 0) colorCelda.llegadaDelta = 'estado-rojo' // -1h
   } else if (llegadaDelta) {
-    // Una vez registrada la llegada, pasa a verde y se detiene el parpadeo
     colorCelda.llegadaDelta = 'estado-verde'
   }
 
-  // LlegadaDelta → SalidaDelta (cronómetro de 4 horas)
-  if (llegadaDelta && !movto.SalidaDelta) {
-    const diff = differenceInMinutes(ahora, llegadaDelta) // minutos desde la llegada
-
-    // Primeras 2 horas → sin color
-    if (diff >= 120 && diff < 180) {
-      // Entre 2h y 3h → naranja
-      colorCelda.salidaDelta = 'estado-naranja'
-    } 
-    else if (diff >= 180 && diff < 240) {
-      // Entre 3h y 4h → rojo
-      colorCelda.salidaDelta = 'estado-rojo'
-    } 
-    else if (diff >= 240) {
-      // Más de 4h → sigue en rojo 
-      colorCelda.salidaDelta = 'estado-rojo'
-    }
-  } else if (movto.SalidaDelta) {
-    // Si ya tiene salida, pasa a verde
+  // === 2. LlegadaDelta → SalidaDelta (Estancia 4h) ===
+  if (llegadaDelta && !salidaDelta) {
+    const diff = differenceInMinutes(ahora, llegadaDelta)
+    if (diff >= 120 && diff < 180) colorCelda.salidaDelta = 'estado-naranja' // 2–3h
+    else if (diff >= 180) colorCelda.salidaDelta = 'estado-rojo' // +3h
+  } else if (salidaDelta) {
     colorCelda.salidaDelta = 'estado-verde'
   }
 
-  // SalidaDelta → EntradaBascula (Estancia: 20 minutos)
+  // === 3. SalidaDelta → EntradaBascula (Estancia 20 min) ===
   if (salidaDelta && !entradaBascula) {
-    const diff = differenceInMinutes(ahora, salidaDelta) // minutos transcurridos desde Salida Delta
-
-    // Entre 10 y 20 minutos → naranja
-    if (diff >= 10 && diff < 20) {
-      colorCelda.entradaBascula = 'estado-naranja'
-    } 
-    // Más de 20 minutos → rojo
-    else if (diff >= 20) {
-      colorCelda.entradaBascula = 'estado-rojo'
-    }
+    const diff = differenceInMinutes(ahora, salidaDelta)
+    if (diff >= 10 && diff < 20) colorCelda.entradaBascula = 'estado-naranja'
+    else if (diff >= 20) colorCelda.entradaBascula = 'estado-rojo'
   } else if (entradaBascula) {
-    // Si ya tiene registro, pasa a verde (detiene parpadeo)
     colorCelda.entradaBascula = 'estado-verde'
   }
 
-  // EntradaBascula → SalidaBascula (Estancia: 20 minutos)
-  if (entradaBascula && !movto.SalidaBascula) {
-    const diff = differenceInMinutes(ahora, entradaBascula) // minutos desde entrada
-
-    // Entre 10 y 20 minutos → rojo parpadeando
-    if (diff >= 10) {
-      colorCelda.salidaBascula = 'estado-rojo'
-    }
-  } else if (movto.SalidaBascula) {
-    // Si ya tiene registro de salida, verde (detiene parpadeo)
+  // === 4. EntradaBascula → SalidaBascula (Estancia 20 min) ===
+  if (entradaBascula && !salidaBascula) {
+    const diff = differenceInMinutes(ahora, entradaBascula)
+    if (diff >= 10) colorCelda.salidaBascula = 'estado-rojo'
+  } else if (salidaBascula) {
     colorCelda.salidaBascula = 'estado-verde'
   }
 
-  // LlegadaAnden → SalidaAnden (Estancia: 2 horas)
+  // === 5. LlegadaAnden → SalidaAnden (Estancia 2h) ===
   if (llegadaAnden && !salidaAnden) {
-    const diff = differenceInMinutes(ahora, llegadaAnden) // minutos desde la llegada al andén
-
-    // De 1h en adelante (60 min) → rojo parpadeando
-    if (diff >= 60) {
-      colorCelda.salidaAnden = 'estado-rojo'
-    }
+    const diff = differenceInMinutes(ahora, llegadaAnden)
+    if (diff >= 60) colorCelda.salidaAnden = 'estado-rojo'
   } else if (salidaAnden) {
-    // Si ya hay registro de salida, verde fijo
     colorCelda.salidaAnden = 'estado-verde'
   }
 
-  // InicioRuta → SalidaPlanta
-  if (inicioRuta && !salidaPlanta) {
-  const diff = differenceInMinutes(ahora, inicioRuta)
-  
-  if (diff >= -120 && diff < -60) {
-    colorCelda.salidaPlanta = 'estado-naranja'
+  // === 6. SalidaPlanta → InicioRuta (2h antes) ==
+  if (salidaPlanta && !inicioRuta) {
+    const diff = differenceInMinutes(ahora, salidaPlanta)
+    if (diff >= 0 && diff < 60) colorFila = 'estado-naranja'
+    else if (diff >= 60) colorFila = 'estado-rojo'
+  } else if (inicioRuta) {
+    colorCelda.inicioRuta = 'estado-verde'
   }
-  if (diff >= -60 && diff < 0) {
-    colorCelda.salidaPlanta = 'estado-rojo'
-  }
-}
 
   return { colorCelda, colorFila }
 }
 
-// COMPONENTE PRINCIPAL 
+// === COMPONENTE PRINCIPAL ===
 export default function Dashboard() {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
     const hoy = new Date()
@@ -186,87 +145,51 @@ export default function Dashboard() {
   const [fechaFin, setFechaFin] = useState('')
   const [movtos, setMovtos] = useState([])
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
-  const INTERVALO_ACTUALIZACION = 60000 // 1 minuto 
+  const INTERVALO_ACTUALIZACION = 60000 // 1 minuto
 
+  // == Carga inicial y autoactualización ===
   useEffect(() => {
-    console.log('Componente montado. Fecha actual:', fechaSeleccionada)
     obtenerDatos()
-
-    const timer = setInterval(() => {
-      console.log('Actualización automática cada minuto...')
-      obtenerDatos()
-    }, INTERVALO_ACTUALIZACION)
-
-    return () => {
-      console.log('Desmontando componente, limpiando intervalos.')
-      clearInterval(timer)
-    }
+    const timer = setInterval(obtenerDatos, INTERVALO_ACTUALIZACION)
+    return () => clearInterval(timer)
   }, [fechaSeleccionada, fechaInicio, fechaFin])
 
-  // Escucha de eventos en tiempo real
+  // === Escucha en tiempo real ==
   useEffect(() => {
-    console.log('Escuchando canal privado: monitor-logistico')
     const channel = echo.private('monitor-logistico')
-
     channel.listen('MovtoUpdated', (evento) => {
-      console.log('Evento recibido desde servidor:', evento)
       setMovtos((prev) =>
         prev.map((m) => (m.ODP === evento.ODP ? { ...m, ...evento } : m))
       )
     })
-
-    return () => {
-      echo.leave('monitor-logistico')
-      console.log('Canal cerrado: monitor-logistico')
-    }
+    return () => echo.leave('monitor-logistico')
   }, [])
 
+  // == Función de carga de datos 
   const obtenerDatos = async () => {
     try {
       let url = '/api/monitor/json'
+      if (fechaInicio && fechaFin) url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
+      else url += `?fecha=${fechaSeleccionada || new Date().toISOString().split('T')[0]}`
 
-      if (fechaInicio && fechaFin) {
-        url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
-        console.log('Consultando rango de fechas:', fechaInicio, 'a', fechaFin)
-      } else if (fechaSeleccionada) {
-        url += `?fecha=${fechaSeleccionada}`
-        console.log('Consultando fecha única:', fechaSeleccionada)
-      } else {
-        const hoy = new Date().toISOString().split('T')[0]
-        url += `?fecha=${hoy}`
-        console.log('Sin selección, usando fecha actual:', hoy)
-      }
-
-      console.log('Solicitud enviada a:', url)
       const res = await fetch(url)
       if (!res.ok) throw new Error(`Error HTTP ${res.status}`)
-
       const data = await res.json()
-      console.log('Respuesta recibida:', data)
-
-      if (data && Array.isArray(data.data)) {
-        setMovtos(data.data)
-        console.log('Total de registros:', data.data.length)
-      } else {
-        console.warn('Formato inesperado:', data)
-        setMovtos([])
-      }
-
-      const hora = new Date().toLocaleTimeString('es-MX')
-      setUltimaActualizacion(hora)
-      console.log('Actualización completada a las:', hora)
-    } catch (error) {
-      console.error('Error al obtener datos:', error)
+      setMovtos(data?.data || [])
+      setUltimaActualizacion(new Date().toLocaleTimeString('es-MX'))
+    } catch {
       setMovtos([])
     }
   }
 
+  //  Render principal 
   return (
     <>
       <Head title="Almacen" />
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">MONITOR TRÁFICO</h1>
 
+        {/* Filtros de fecha */}
         <div className="flex flex-wrap gap-4 items-center mb-4">
           <div>
             <label className="block text-sm font-medium">Fecha única</label>
@@ -274,7 +197,6 @@ export default function Dashboard() {
               type="date"
               value={fechaSeleccionada}
               onChange={(e) => {
-                console.log('Cambio de fecha única:', e.target.value)
                 setFechaSeleccionada(e.target.value)
                 setFechaInicio('')
                 setFechaFin('')
@@ -282,28 +204,24 @@ export default function Dashboard() {
               className="border rounded px-2 py-1"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium">Desde</label>
             <input
               type="date"
               value={fechaInicio}
               onChange={(e) => {
-                console.log('Cambio de fecha inicio:', e.target.value)
                 setFechaInicio(e.target.value)
                 setFechaSeleccionada('')
               }}
               className="border rounded px-2 py-1"
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium">Hasta</label>
             <input
               type="date"
               value={fechaFin}
               onChange={(e) => {
-                console.log('Cambio de fecha fin:', e.target.value)
                 setFechaFin(e.target.value)
                 setFechaSeleccionada('')
               }}
@@ -312,10 +230,7 @@ export default function Dashboard() {
           </div>
 
           <button
-            onClick={() => {
-              console.log('Cargando fechas del filtro de rango de fecha')
-              obtenerDatos()
-            }}
+            onClick={obtenerDatos}
             className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
           >
             Filtrar
@@ -326,6 +241,7 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Tabla principal */}
         <table className="min-w-full border border-gray-300 text-sm">
           <thead className="bg-gray-100">
             <tr>
@@ -368,17 +284,21 @@ export default function Dashboard() {
                       <td className={`border px-2 py-1 ${colorCelda.llegadaAnden}`}>
                         {formatearFecha(m.LlegadaAnden)}
                       </td>
-                      <td className="border px-2 py-1">{formatearFecha(m.SalidaAnden)}</td>
+                      <td className={`border px-2 py-1 ${colorCelda.salidaAnden}`}>
+                        {formatearFecha(m.SalidaAnden)}
+                      </td>
                       <td className={`border px-2 py-1 ${colorCelda.salidaPlanta}`}>
                         {formatearFecha(m.SalidaPlanta)}
                       </td>
-                      <td className="border px-2 py-1">{formatearFecha(m.InicioRuta)}</td>
+                      <td className={`border px-2 py-1 ${colorCelda.inicioRuta}`}>
+                        {formatearFecha(m.InicioRuta)}
+                      </td>
                     </tr>
                   )
                 })
             ) : (
               <tr>
-                <td colSpan="9" className="text-center py-3 text-gray-500">
+                <td colSpan="11" className="text-center py-3 text-gray-500">
                   No hay registros para la fecha seleccionada o rango
                 </td>
               </tr>
