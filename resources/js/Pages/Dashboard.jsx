@@ -4,8 +4,6 @@ import { parseISO, differenceInMinutes } from 'date-fns'
 import * as dateFnsTz from 'date-fns-tz'
 import echo from '../echo'
 
-// === CSS de estados dinámicos ===
-// NO SE APLICA COLORVERDE SOLO BLANCO
 const estilos = `
 @keyframes blink {
   50% { opacity: 0.4; }
@@ -25,16 +23,14 @@ const estilos = `
   animation: blink 1s infinite;
   color: white;
 }
-`;
+`
 
-// === Inyectar estilos al documento ==
 if (typeof document !== 'undefined') {
   const styleTag = document.createElement('style')
   styleTag.innerHTML = estilos
   document.head.appendChild(styleTag)
 }
 
-// == Función de formato de fecha ===
 const formatearFecha = (valor) => {
   if (!valor) return 'No reportado'
   try {
@@ -46,7 +42,6 @@ const formatearFecha = (valor) => {
   }
 }
 
-// === Lógica de colores y tiempos =
 const getColorClase = (movto) => {
   const zona = 'America/Mexico_City'
   let ahora
@@ -80,25 +75,22 @@ const getColorClase = (movto) => {
 
   let colorFila = ''
 
-  // === 1. CitaDelta → LlegadaDelta ===
   if (citaDelta && !llegadaDelta) {
     const diff = differenceInMinutes(citaDelta, ahora)
-    if (diff <= 120 && diff > 60) colorCelda.llegadaDelta = 'estado-naranja' // -2h
-    else if (diff <= 60 && diff >= 0) colorCelda.llegadaDelta = 'estado-rojo' // -1h
+    if (diff <= 120 && diff > 60) colorCelda.llegadaDelta = 'estado-naranja'
+    else if (diff <= 60 && diff >= 0) colorCelda.llegadaDelta = 'estado-rojo'
   } else if (llegadaDelta) {
     colorCelda.llegadaDelta = 'estado-verde'
   }
 
-  // === 2. LlegadaDelta → SalidaDelta (Estancia 4h) ===
   if (llegadaDelta && !salidaDelta) {
     const diff = differenceInMinutes(ahora, llegadaDelta)
-    if (diff >= 120 && diff < 180) colorCelda.salidaDelta = 'estado-naranja' // 2–3h
-    else if (diff >= 180) colorCelda.salidaDelta = 'estado-rojo' // +3h
+    if (diff >= 120 && diff < 180) colorCelda.salidaDelta = 'estado-naranja'
+    else if (diff >= 180) colorCelda.salidaDelta = 'estado-rojo'
   } else if (salidaDelta) {
     colorCelda.salidaDelta = 'estado-verde'
   }
 
-  // === 3. SalidaDelta → EntradaBascula (Estancia 20 min) ===
   if (salidaDelta && !entradaBascula) {
     const diff = differenceInMinutes(ahora, salidaDelta)
     if (diff >= 10 && diff < 20) colorCelda.entradaBascula = 'estado-naranja'
@@ -107,7 +99,6 @@ const getColorClase = (movto) => {
     colorCelda.entradaBascula = 'estado-verde'
   }
 
-  // === 4. EntradaBascula → SalidaBascula (Estancia 20 min) ===
   if (entradaBascula && !salidaBascula) {
     const diff = differenceInMinutes(ahora, entradaBascula)
     if (diff >= 10) colorCelda.salidaBascula = 'estado-rojo'
@@ -115,7 +106,6 @@ const getColorClase = (movto) => {
     colorCelda.salidaBascula = 'estado-verde'
   }
 
-  // === 5. LlegadaAnden → SalidaAnden (Estancia 2h) ===
   if (llegadaAnden && !salidaAnden) {
     const diff = differenceInMinutes(ahora, llegadaAnden)
     if (diff >= 60) colorCelda.salidaAnden = 'estado-rojo'
@@ -123,7 +113,6 @@ const getColorClase = (movto) => {
     colorCelda.salidaAnden = 'estado-verde'
   }
 
-  // === 6. SalidaPlanta → InicioRuta (2h antes) ==
   if (salidaPlanta && !inicioRuta) {
     const diff = differenceInMinutes(ahora, salidaPlanta)
     if (diff >= 0 && diff < 60) colorFila = 'estado-naranja'
@@ -135,7 +124,6 @@ const getColorClase = (movto) => {
   return { colorCelda, colorFila }
 }
 
-// === COMPONENTE PRINCIPAL ===
 export default function Dashboard() {
   const [fechaSeleccionada, setFechaSeleccionada] = useState(() => {
     const hoy = new Date()
@@ -145,16 +133,14 @@ export default function Dashboard() {
   const [fechaFin, setFechaFin] = useState('')
   const [movtos, setMovtos] = useState([])
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
-  const INTERVALO_ACTUALIZACION = 60000 // 1 minuto
+  const INTERVALO_ACTUALIZACION = 60000
 
-  // == Carga inicial y autoactualización ===
   useEffect(() => {
     obtenerDatos()
     const timer = setInterval(obtenerDatos, INTERVALO_ACTUALIZACION)
     return () => clearInterval(timer)
   }, [fechaSeleccionada, fechaInicio, fechaFin])
 
-  // === Escucha en tiempo real ==
   useEffect(() => {
     const channel = echo.private('monitor-logistico')
     channel.listen('MovtoUpdated', (evento) => {
@@ -165,31 +151,32 @@ export default function Dashboard() {
     return () => echo.leave('monitor-logistico')
   }, [])
 
-  // == Función de carga de datos 
   const obtenerDatos = async () => {
     try {
       let url = '/api/monitor/json'
       if (fechaInicio && fechaFin) url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
       else url += `?fecha=${fechaSeleccionada || new Date().toISOString().split('T')[0]}`
 
+      console.log('Conectando con backend:', url)
       const res = await fetch(url)
       if (!res.ok) throw new Error(`Error HTTP ${res.status}`)
+
       const data = await res.json()
+      console.log('Datos recibidos:', data?.data?.length || 0, 'registros')
       setMovtos(data?.data || [])
       setUltimaActualizacion(new Date().toLocaleTimeString('es-MX'))
-    } catch {
+    } catch (error) {
+      console.error('Error en la conexión o lectura de datos:', error)
       setMovtos([])
     }
   }
 
-  //  Render principal 
   return (
     <>
       <Head title="Almacen" />
       <div className="container mx-auto p-4">
         <h1 className="text-2xl font-bold mb-4">MONITOR TRÁFICO</h1>
 
-        {/* Filtros de fecha */}
         <div className="flex flex-wrap gap-4 items-center mb-4">
           <div>
             <label className="block text-sm font-medium">Fecha única</label>
@@ -241,7 +228,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Tabla principal */}
         <table className="min-w-full border border-gray-300 text-sm">
           <thead className="bg-gray-100">
             <tr>

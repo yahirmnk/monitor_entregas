@@ -59,7 +59,7 @@ class DashboardController extends Controller
                     'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null, //No. Andén
                     'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null, //Llegada Andén 
                     'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, //Salida Andén
-                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? $movto->CasetaSerdan?->HoraSalida ?? null, //Salida Planta
+                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? null, //Salida Planta
                     'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null, // Inicio Ruta
                 ];
             });
@@ -121,7 +121,7 @@ class DashboardController extends Controller
                     'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null, //No. Andén
                     'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null, //Llegada Andén 
                     'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, //Salida Andén
-                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? $movto->CasetaSerdan?->HoraSalida ?? null, //Salida Planta
+                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? null, //Salida Planta
                     'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null, // Inicio Ruta
                 ];
             });
