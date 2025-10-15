@@ -7,7 +7,6 @@ use App\Models\Movto;
 use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Log;
-//use App\Events\MovtoUpdated;
 
 class DashboardController extends Controller
 {
@@ -28,43 +27,52 @@ class DashboardController extends Controller
                 'MonitorAndenes',
                 'Anden'
             ])
-            ->where(function ($q){
-                $q->where('es_principal', 1)
-                    ->orWhere(function ($sub) {
-                        $sub->whereNull('es_principal')
-                            ->whereNull('Consolidado');
-                    });
-            });
-
-            // Aplicar filtro por rango o por fecha única
+            //->where(function ($q){
+            //    $q->where('es_principal', 1)
+            //        ->orWhere(function ($sub) {
+            //            $sub->whereNull('es_principal')
+            //                ->whereNull('Consolidado');
+            //        });
+            //});
+            ;
+            // === Filtro por rango o fecha única ===
             if ($fechaInicio && $fechaFin) {
                 $query->whereBetween('CitaCarga', [$fechaInicio, $fechaFin]);
             } else {
                 $query->whereDate('CitaCarga', $fecha);
             }
-            Log::info('Filtro aplicado de forma correcta',[
+
+            // === Log para verificar filtros aplicados ===
+            Log::info('Filtro aplicado correctamente', [
                 'fecha' => $fecha,
                 'fechaInicio' => $fechaInicio,
                 'fechaFin' => $fechaFin,
-                'totalMovtos' => $query->count(),
+                'totalRegistros' => $query->count(),
             ]);
-            $movtos = $query->get()->map(function ($movto) {
+
+            // === Helper para convertir todas las fechas a zona local México ===
+            $toLocal = fn($v) => $v
+                ? Carbon::parse($v)->setTimezone('America/Mexico_City')->toDateTimeString()
+                : null;
+
+            // === Mapear resultados ===
+            $movtos = $query->get()->map(function ($movto) use ($toLocal) {
                 return [
-                    'ODP'            => $movto->ODP, //ODP
-                    'CitaDelta'      => $movto->CitaDelta ?? null, //Cita Delta
-                    'LlegadaDelta'   => $movto->Delta?->LlegadaDelta ?? null, //Llegada Delta
-                    'SalidaDelta'    => $movto->Delta?->SalidaDelta ?? null, // Salida Delta
-                    'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null, // Entrada Báscula
-                    'SalidaBascula'  => $movto->Bascula?->HorsaSalidaBascula ?? null, // Salida Báscula 
-                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null, //No. Andén
-                    'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null, //Llegada Andén 
-                    'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, //Salida Andén
-                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? null, //Salida Planta
-                    'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null, // Inicio Ruta
+                    'ODP'            => $movto->ODP,
+                    'CitaDelta'      => $toLocal($movto->CitaDelta),
+                    'LlegadaDelta'   => $toLocal($movto->Delta?->LlegadaDelta),
+                    'SalidaDelta'    => $toLocal($movto->Delta?->SalidaDelta),
+                    'EntradaBascula' => $toLocal($movto->Bascula?->HoraEntradaBascula),
+                    'SalidaBascula'  => $toLocal($movto->Bascula?->HoraSalidaBascula),
+                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
+                    'LlegadaAnden'   => $toLocal($movto->Anden?->HoraLlegada),
+                    'SalidaAnden'    => $toLocal($movto->Anden?->SalidaAnden),
+                    'SalidaPlanta'   => $toLocal($movto->Bascula?->HoraSalidaBascula),
+                    'InicioRuta'     => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
                 ];
             });
 
-            // Texto legible de la fecha consultada
+            // === Texto legible de la fecha consultada ===
             $fechaTexto = $fechaInicio && $fechaFin
                 ? "Del " . Carbon::parse($fechaInicio)->locale('es')->translatedFormat('d \\d\\e F') .
                   " al " . Carbon::parse($fechaFin)->locale('es')->translatedFormat('d \\d\\e F Y')
@@ -76,6 +84,8 @@ class DashboardController extends Controller
                 'fechaTexto' => $fechaTexto,
             ]);
         } catch (\Exception $e) {
+            Log::error('Error en index DashboardController', ['detalle' => $e->getMessage()]);
+
             return Inertia::render('Dashboard', [
                 'movtos' => [],
                 'fechaSeleccionada' => now()->toDateString(),
@@ -103,26 +113,30 @@ class DashboardController extends Controller
                 'Anden',
             ]);
 
-            // Filtro por rango o fecha única
             if ($fechaInicio && $fechaFin) {
                 $query->whereBetween('CitaCarga', [$fechaInicio, $fechaFin]);
             } else {
                 $query->whereDate('CitaCarga', $fecha);
             }
 
-            $datos = $query->get()->map(function ($movto) {
+            // Helper local
+            $toLocal = fn($v) => $v
+                ? Carbon::parse($v)->setTimezone('America/Mexico_City')->toDateTimeString()
+                : null;
+
+            $datos = $query->get()->map(function ($movto) use ($toLocal) {
                 return [
-                    'ODP'            => $movto->ODP, //ODP
-                    'CitaDelta'      => $movto->CitaDelta ?? null, //Cita Delta
-                    'LlegadaDelta'   => $movto->Delta?->LlegadaDelta ?? null, //Llegada Delta
-                    'SalidaDelta'    => $movto->Delta?->SalidaDelta ?? null, // Salida Delta
-                    'EntradaBascula' => $movto->Bascula?->HoraEntradaBascula ?? null, // Entrada Báscula
-                    'SalidaBascula'  => $movto->Bascula?->HorsaSalidaBascula ?? null, // Salida Báscula 
-                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null, //No. Andén
-                    'LlegadaAnden'   => $movto->Anden?->HoraLlegada ?? null, //Llegada Andén 
-                    'SalidaAnden'    => $movto->Anden?->SalidaAnden ?? null, //Salida Andén
-                    'SalidaPlanta'   => $movto->Bascula?->HoraSalidaBascula ?? null, //Salida Planta
-                    'InicioRuta'     => $movto->Bascula?->HoraSalidaBasEmbarque ?? null, // Inicio Ruta
+                    'ODP'            => $movto->ODP,
+                    'CitaDelta'      => $toLocal($movto->CitaDelta),
+                    'LlegadaDelta'   => $toLocal($movto->Delta?->LlegadaDelta),
+                    'SalidaDelta'    => $toLocal($movto->Delta?->SalidaDelta),
+                    'EntradaBascula' => $toLocal($movto->Bascula?->HoraEntradaBascula),
+                    'SalidaBascula'  => $toLocal($movto->Bascula?->HoraSalidaBascula),
+                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
+                    'LlegadaAnden'   => $toLocal($movto->Anden?->HoraLlegada),
+                    'SalidaAnden'    => $toLocal($movto->Anden?->SalidaAnden),
+                    'SalidaPlanta'   => $toLocal($movto->Bascula?->HoraSalidaBascula),
+                    'InicioRuta'     => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
                 ];
             });
 
@@ -130,6 +144,11 @@ class DashboardController extends Controller
                 ? "Del " . Carbon::parse($fechaInicio)->locale('es')->translatedFormat('d \\d\\e F') .
                   " al " . Carbon::parse($fechaFin)->locale('es')->translatedFormat('d \\d\\e F Y')
                 : ucfirst(Carbon::parse($fecha)->locale('es')->translatedFormat('l d \\d\\e F Y'));
+
+            Log::info('Consulta JSON completada correctamente', [
+                'rango' => $fechaInicio && $fechaFin ? "$fechaInicio - $fechaFin" : $fecha,
+                'totalRegistros' => $datos->count(),
+            ]);
 
             return response()->json([
                 'fecha_consultada' => $fechaInicio && $fechaFin ? "$fechaInicio - $fechaFin" : $fecha,
@@ -139,6 +158,8 @@ class DashboardController extends Controller
                 'sin_datos' => $datos->isEmpty() ? 'No hay registros para la fecha o rango seleccionado' : false,
             ]);
         } catch (\Exception $e) {
+            Log::error('Error en json DashboardController', ['detalle' => $e->getMessage()]);
+
             return response()->json([
                 'error' => true,
                 'mensaje' => 'Error al consultar los datos',
