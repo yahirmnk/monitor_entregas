@@ -17,5 +17,12 @@ class AdminUserSeeder extends Seeder
                 'password' => Hash::make(env('ADMIN_PASSWORD', 'admin123')),
             ]
         );
+        User::updateOrCreate(
+            ['email' => env('ADMIN_EMAIL', 'carlosg@maulec.com.mx')],
+            [
+                'name' => env('ADMIN_NAME', 'Hernan'),
+                'password' => Hash::make(env('ADMIN_PASSWORD', 'TraficoMau2025')),
+            ]
+        );
     }
 }
