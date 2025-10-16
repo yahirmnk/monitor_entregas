@@ -24,5 +24,12 @@ class AdminUserSeeder extends Seeder
                 'password' => Hash::make(env('ADMIN_PASSWORD', 'TraficoMau2025')),
             ]
         );
+        User::updateOrCreate(
+            ['email' => env('ADMIN_EMAIL', 'logisticageneral@maulec.com.mx')],
+            [
+                'name' => env('ADMIN_NAME', 'General'),
+                'password' => Hash::make(env('ADMIN_PASSWORD', 'LogisticaGN2025')),
+            ]
+        );
     }
 }

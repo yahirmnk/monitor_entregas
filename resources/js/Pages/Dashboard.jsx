@@ -180,7 +180,7 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold mb-4 text-center">MONITOR TRÁFICO PASTEURIZADORA MAULEC SAPI DE CV</h1>
 
         <div className="flex flex-wrap gap-4 items-center mb-4 justify-center">
-          {/* --- Campo de Fecha Única (comentado temporalmente) ---
+          {/* Campo de Fecha Única commentado
           <div>
             <label className="block text-sm font-medium">Fecha única</label>
             <input
@@ -194,7 +194,7 @@ export default function Dashboard() {
               className="border rounded px-2 py-1"
             />
           </div>
-          --- Fin de campo de Fecha Única --- */}
+          */}
 
           
           <div>
@@ -233,7 +233,7 @@ export default function Dashboard() {
           <div className="text-sm text-gray-600 italic">
             Última actualización: {ultimaActualizacion || '---'}
           </div>
-          {/* --- Botón de cerrar sesión --- */}
+          {/*Botón de cerrar sesión */}
           <form
             method="POST"
             action="/logout"
@@ -246,14 +246,11 @@ export default function Dashboard() {
                 .querySelector('meta[name="csrf-token"]')
                 ?.getAttribute('content')}
             />
-            <button
-              type="submit"
-              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
-            >
+            <button type="submit"
+              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition">
               Cerrar sesión
             </button>
           </form>
-          {/* --- Fin botón cerrar sesión --- */}
         </div>
 
         <div className="overflow-x-auto max-h-[85vh] shadow-md border border-gray-300 rounded-md">
