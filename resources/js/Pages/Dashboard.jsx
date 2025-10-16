@@ -129,8 +129,9 @@ export default function Dashboard() {
     const hoy = new Date()
     return hoy.toISOString().split('T')[0]
   })
-  const [fechaInicio, setFechaInicio] = useState('')
-  const [fechaFin, setFechaFin] = useState('')
+  const hoy = new Date().toISOString().split('T')[0]
+  const [fechaInicio, setFechaInicio] = useState(hoy)
+  const [fechaFin, setFechaFin] = useState(hoy)
   const [movtos, setMovtos] = useState([])
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
   const INTERVALO_ACTUALIZACION = 60000
@@ -275,6 +276,7 @@ export default function Dashboard() {
               {movtos.length > 0 ? (
                 movtos
                   .filter((m) => !m.SalidaPlanta) //MANTENER DESACTIVADA YA QUE OMITE REGISTROS
+                  .filter((m) => m.CitaDelta)
                   .map((m, i) => {
                     const { colorCelda, colorFila } = getColorClase(m)
                     return (

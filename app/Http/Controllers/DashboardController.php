@@ -27,6 +27,8 @@ class DashboardController extends Controller
                 'MonitorAndenes',
                 'Anden'
             ])
+            
+            //ERA PARA LOS CONSOLIDADOS
             //->where(function ($q){
             //    $q->where('es_principal', 1)
             //        ->orWhere(function ($sub) {
@@ -35,14 +37,16 @@ class DashboardController extends Controller
             //        });
             //});
             ;
-            // === Filtro por rango o fecha única ===
+            // Filtro por rango o fecha única
             if ($fechaInicio && $fechaFin) {
                 $query->whereBetween('CitaCarga', [$fechaInicio, $fechaFin]);
             } else {
                 $query->whereDate('CitaCarga', $fecha);
             }
 
-            // === Log para verificar filtros aplicados ===
+            $query->orderBy('CitaDelta', 'asc');
+
+            // Log para verificar filtros aplicados
             Log::info('Filtro aplicado correctamente', [
                 'fecha' => $fecha,
                 'fechaInicio' => $fechaInicio,
@@ -50,12 +54,12 @@ class DashboardController extends Controller
                 'totalRegistros' => $query->count(),
             ]);
 
-            // === Helper para convertir todas las fechas a zona local México ===
+            // elper para convertir todas las fechas a zona local MExico
             $toLocal = fn($v) => $v
                 ? Carbon::parse($v)->setTimezone('America/Mexico_City')->toDateTimeString()
                 : null;
 
-            // === Mapear resultados ===
+            // Mapear resultados
             $movtos = $query->get()->map(function ($movto) use ($toLocal) {
                 return [
                     'ODP'            => $movto->ODP,
@@ -73,7 +77,7 @@ class DashboardController extends Controller
                 ];
             });
 
-            // === Texto legible de la fecha consultada ===
+            // Texto legible de la fecha consultada
             $fechaTexto = $fechaInicio && $fechaFin
                 ? "Del " . Carbon::parse($fechaInicio)->locale('es')->translatedFormat('d \\d\\e F') .
                   " al " . Carbon::parse($fechaFin)->locale('es')->translatedFormat('d \\d\\e F Y')
@@ -119,6 +123,8 @@ class DashboardController extends Controller
             } else {
                 $query->whereDate('CitaCarga', $fecha);
             }
+
+            $query->orderBy('CitaDelta', 'asc');
 
             // Helper local
             $toLocal = fn($v) => $v
