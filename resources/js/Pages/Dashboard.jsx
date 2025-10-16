@@ -113,12 +113,12 @@ const getColorClase = (movto) => {
     colorCelda.salidaAnden = 'estado-verde'
   }
 
-  if (salidaPlanta && !inicioRuta) {
-    const diff = differenceInMinutes(ahora, salidaPlanta)
-    if (diff >= 0 && diff < 60) colorFila = 'estado-naranja'
-    else if (diff >= 60) colorFila = 'estado-rojo'
-  } else if (inicioRuta) {
-    colorCelda.inicioRuta = 'estado-verde'
+  if (inicioRuta && !salidaPlanta) {
+    const diff = differenceInMinutes(inicioRuta, ahora)
+    if (diff <= 120 && diff > 60) colorFila = 'estado-naranja'
+    else if (diff <= 60) colorFila = 'estado-rojo'
+  } else if (salidaPlanta) {
+    
   }
 
   return { colorCelda, colorFila }
@@ -155,8 +155,8 @@ export default function Dashboard() {
     try {
       let url = '/api/monitor/json'
       // Descomentar para volver a activar filtros de rango de fechas
-      // if (fechaInicio && fechaFin) url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
-      // else 
+       if (fechaInicio && fechaFin) url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
+       else 
       url += `?fecha=${fechaSeleccionada || new Date().toISOString().split('T')[0]}`
 
       console.log('Conectando con backend:', url)
@@ -180,6 +180,7 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold mb-4 text-center">MONITOR TRÁFICO PASTEURIZADORA MAULEC SAPI DE CV</h1>
 
         <div className="flex flex-wrap gap-4 items-center mb-4 justify-center">
+          {/* --- Campo de Fecha Única (comentado temporalmente) ---
           <div>
             <label className="block text-sm font-medium">Fecha única</label>
             <input
@@ -193,8 +194,9 @@ export default function Dashboard() {
               className="border rounded px-2 py-1"
             />
           </div>
+          --- Fin de campo de Fecha Única --- */}
 
-          {/* 
+          
           <div>
             <label className="block text-sm font-medium">Desde</label>
             <input
@@ -219,7 +221,7 @@ export default function Dashboard() {
               className="border rounded px-2 py-1"
             />
           </div>
-           */}
+           
 
           <button
             onClick={obtenerDatos}
@@ -238,6 +240,7 @@ export default function Dashboard() {
             <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th className="border px-2 py-2">ODP</th>
+                <th className="border px-2 py-2">Línea Transporte</th>
                 <th className="border px-2 py-2">Cita Delta</th>
                 <th className="border px-2 py-2">Llegada Delta</th>
                 <th className="border px-2 py-2">Salida Delta</th>
@@ -253,12 +256,13 @@ export default function Dashboard() {
             <tbody>
               {movtos.length > 0 ? (
                 movtos
-                  .filter((m) => !m.InicioRuta) //MANTENER DESACTIVADA YA QUE OMITE REGISTROS
+                  //.filter((m) => !m.InicioRuta) //MANTENER DESACTIVADA YA QUE OMITE REGISTROS
                   .map((m, i) => {
                     const { colorCelda, colorFila } = getColorClase(m)
                     return (
                       <tr key={i} className={`text-center ${colorFila}`}>
                         <td className="border px-2 py-1">{m.ODP || 'No reportado'}</td>
+                        <td className="border px-2 py-1">{m.LineaTransporte || 'No reportado'}</td>
                         <td className="border px-2 py-1">{formatearFecha(m.CitaDelta)}</td>
                         <td className={`border px-2 py-1 ${colorCelda.llegadaDelta}`}>
                           {formatearFecha(m.LlegadaDelta)}

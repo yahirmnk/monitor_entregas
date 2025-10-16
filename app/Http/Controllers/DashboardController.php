@@ -59,6 +59,7 @@ class DashboardController extends Controller
             $movtos = $query->get()->map(function ($movto) use ($toLocal) {
                 return [
                     'ODP'            => $movto->ODP,
+                    'LineaTransporte' => $movto->LineaTransporte,
                     'CitaDelta'      => $toLocal($movto->CitaDelta),
                     'LlegadaDelta'   => $toLocal($movto->Delta?->LlegadaDelta),
                     'SalidaDelta'    => $toLocal($movto->Delta?->SalidaDelta),
@@ -67,8 +68,8 @@ class DashboardController extends Controller
                     'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
                     'LlegadaAnden'   => $toLocal($movto->Anden?->HoraLlegada),
                     'SalidaAnden'    => $toLocal($movto->Anden?->HoraSalida),
-                    'SalidaPlanta'   => $toLocal($movto->Bascula?->HoraSalidaBascula),
-                    'InicioRuta'     => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
+                    'SalidaPlanta'   => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
+                    'InicioRuta'     => $toLocal($movto->FechaProgramacion),
                 ];
             });
 
@@ -127,6 +128,7 @@ class DashboardController extends Controller
             $datos = $query->get()->map(function ($movto) use ($toLocal) {
                 return [
                     'ODP'            => $movto->ODP ?? $movto->Delta?->ODP?? null,
+                    'LineaTransporte' => $movto->LineaTransporte,
                     'CitaDelta'      => $toLocal($movto->CitaDelta),
                     'LlegadaDelta'   => $toLocal($movto->Delta?->LlegadaDelta),
                     'SalidaDelta'    => $toLocal($movto->Delta?->SalidaDelta),
@@ -135,8 +137,8 @@ class DashboardController extends Controller
                     'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
                     'LlegadaAnden'   => $toLocal($movto->Anden?->HoraLlegada),
                     'SalidaAnden'    => $toLocal($movto->Anden?->SalidaAnden),
-                    'SalidaPlanta'   => $toLocal($movto->Bascula?->HoraSalidaBascula),
-                    'InicioRuta'     => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
+                    'SalidaPlanta'   => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
+                    'InicioRuta'     => $toLocal($movto->FechaProgramacion),
                 ];
             });
 
