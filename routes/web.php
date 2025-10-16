@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 
+use Illuminate\Support\Facades\Auth;
+
 Route::get('/', function () {
     // Página de bienvenida pública (sin login)
     return Inertia::render('Welcome', [
@@ -16,6 +18,13 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::post('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout');
 
 // Dashboard Logístico (solo usuarios autenticados)
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -233,6 +233,27 @@ export default function Dashboard() {
           <div className="text-sm text-gray-600 italic">
             Última actualización: {ultimaActualizacion || '---'}
           </div>
+          {/* --- Botón de cerrar sesión --- */}
+          <form
+            method="POST"
+            action="/logout"
+            onSubmit={() => console.log('Cerrando sesión...')}
+          >
+            <input
+              type="hidden"
+              name="_token"
+              value={document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute('content')}
+            />
+            <button
+              type="submit"
+              className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 transition"
+            >
+              Cerrar sesión
+            </button>
+          </form>
+          {/* --- Fin botón cerrar sesión --- */}
         </div>
 
         <div className="overflow-x-auto max-h-[85vh] shadow-md border border-gray-300 rounded-md">
@@ -302,6 +323,11 @@ export default function Dashboard() {
             </tbody>
           </table>
         </div>
+      </div>
+      <div>
+        <footer>
+          <p><center>Desarrollo y análisis de datos®</center></p>
+        </footer>
       </div>
     </>
   )
