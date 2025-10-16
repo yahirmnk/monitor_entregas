@@ -154,7 +154,7 @@ export default function Dashboard() {
   const obtenerDatos = async () => {
     try {
       let url = '/api/monitor/json'
-      // --- Descomentar para volver a activar filtros de rango de fechas ---
+      // Descomentar para volver a activar filtros de rango de fechas
       // if (fechaInicio && fechaFin) url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
       // else 
       url += `?fecha=${fechaSeleccionada || new Date().toISOString().split('T')[0]}`
@@ -194,7 +194,7 @@ export default function Dashboard() {
             />
           </div>
 
-          {/* --- Campos de rango temporal (comentados temporalmente) ---
+          {/* 
           <div>
             <label className="block text-sm font-medium">Desde</label>
             <input
@@ -219,7 +219,7 @@ export default function Dashboard() {
               className="border rounded px-2 py-1"
             />
           </div>
-          --- Fin de campos de rango temporal --- */}
+           */}
 
           <button
             onClick={obtenerDatos}
