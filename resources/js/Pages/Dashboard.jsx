@@ -177,7 +177,7 @@ export default function Dashboard() {
     <>
       <Head title="Almacen" />
       <div className="container mx-auto max-w-none p-2">
-        <h1 className="text-3xl font-bold mb-4 text-center">MONITOR TRÁFICO</h1>
+        <h1 className="text-3xl font-bold mb-4 text-center">MONITOR TRÁFICO PASTEURIZADORA MAULEC SAPI DE CV</h1>
 
         <div className="flex flex-wrap gap-4 items-center mb-4 justify-center">
           <div>
