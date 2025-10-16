@@ -323,11 +323,11 @@ export default function Dashboard() {
           </table>
         </div>
       </div>
-      <div>
-        <footer>
-          <p><center>Desarrollo y análisis de datos®</center></p>
-        </footer>
-      </div>
+      <footer className="bg-gray-100 text-center py-4 mt-6 border-t shadow-inner">
+        <p className="text-gray-700 text-sm md:text-base tracking-wide">
+          © {new Date().getFullYear()} Desarrollo y análisis de datos®
+        </p>
+      </footer>
     </>
   )
 }

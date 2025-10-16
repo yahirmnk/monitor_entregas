@@ -17,7 +17,7 @@ class Movto extends Model
         'CitaAnden', 'FechaRegistro', 
         'FechaProgramacion', 'CitaCarga',
         'Consolidado', 'es_principal',
-        'LineaTransporte',
+        'LineaTransporte', 'Status',
     ];
 
     // Relación con tabla Delta por ODP

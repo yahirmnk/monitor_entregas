@@ -36,7 +36,10 @@ class DashboardController extends Controller
             //                ->whereNull('Consolidado');
             //        });
             //});
-            ;
+            ->where(function ($q) {
+                $q->whereNotNull('Status') // Evita los NULL
+                ->whereRaw("LOWER(TRIM(Status)) = 'activo'"); // Solo los activos
+            });
             // Filtro por rango o fecha única
             if ($fechaInicio && $fechaFin) {
                 $query->whereBetween('CitaCarga', [$fechaInicio, $fechaFin]);
