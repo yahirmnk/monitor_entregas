@@ -37,8 +37,8 @@ class DashboardController extends Controller
             //        });
             //});
             ->where(function ($q) {
-                $q->whereNotNull('Status') // Evita los NULL
-                ->whereRaw("LOWER(TRIM(Status)) = 'activo'"); // Solo los activos
+                $q->whereNotNull('Status') 
+                ->whereRaw("LOWER(TRIM(Status)) = 'activo'"); 
             });
             // Filtro por rango o fecha única
             if ($fechaInicio && $fechaFin) {
