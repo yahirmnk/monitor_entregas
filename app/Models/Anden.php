@@ -16,11 +16,11 @@ class Anden extends Model
 
     public function Movto()
     {
-        return $this->belongsTo(Movto::class, 'IDAnden', 'IDMovto');
+        return $this->belongsTo(Movto::class, 'IDMovto', 'IDAnden');
     }
 
     public function MonitorAndenes()
     {
-        return $this->hasOne(MonitorAnden::class, 'IDAnden', 'IDMovto');
+        return $this->hasOne(MonitorAnden::class, 'IDMovto', 'IDAnden');
     }
 }

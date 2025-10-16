@@ -18,29 +18,30 @@ class Movto extends Model
         'Consolidado', 'es_principal',
     ];
 
+    // Relación con tabla Delta por ODP
     public function Delta()
     {
-        return $this->hasOne(Delta::class, 'IDDelta', 'IDMovto');
+        return $this->hasOne(Delta::class, 'ODP', 'ODP');
     }
 
     public function Bascula()
     {
-        return $this->hasOne(Bascula::class, 'IDBascula', 'IDMovto');
+        return $this->hasOne(Bascula::class, 'ODP', 'ODP');
     }
 
     public function CasetaSerdan()
     {
-        return $this->hasOne(CasetaSerdan::class, 'IDCaseta', 'IDMovto');
+        return $this->hasOne(CasetaSerdan::class, 'ODP', 'ODP');
     }
 
     public function MonitorAndenes()
     {
-        return $this->hasOne(MonitorAnden::class, 'IdMonitor', 'IDMovto');
+        return $this->hasOne(MonitorAnden::class, 'ODP', 'ODP');
     }
 
     public function Anden()
     {
-        return $this->hasOne(Anden::class, 'IDAnden', 'IDMovto');
+        return $this->hasOne(Anden::class, 'ODP', 'ODP');
     }
 
     protected static function booted()
@@ -54,4 +55,3 @@ class Movto extends Model
         });
     }
 }
-

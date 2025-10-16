@@ -16,6 +16,6 @@ class CasetaSerdan extends Model
 
     public function Movto()
     {
-        return $this->belongsTo(Movto::class, 'IDCaseta', 'IDMovto');
+        return $this->belongsTo(Movto::class, 'IDMovto', 'IDCaseta');
     }
 }

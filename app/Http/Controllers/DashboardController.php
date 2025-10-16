@@ -66,7 +66,7 @@ class DashboardController extends Controller
                     'SalidaBascula'  => $toLocal($movto->Bascula?->HoraSalidaBascula),
                     'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
                     'LlegadaAnden'   => $toLocal($movto->Anden?->HoraLlegada),
-                    'SalidaAnden'    => $toLocal($movto->Anden?->SalidaAnden),
+                    'SalidaAnden'    => $toLocal($movto->Anden?->HoraSalida),
                     'SalidaPlanta'   => $toLocal($movto->Bascula?->HoraSalidaBascula),
                     'InicioRuta'     => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
                 ];
@@ -126,7 +126,7 @@ class DashboardController extends Controller
 
             $datos = $query->get()->map(function ($movto) use ($toLocal) {
                 return [
-                    'ODP'            => $movto->ODP,
+                    'ODP'            => $movto->ODP ?? $movto->Delta?->ODP?? null,
                     'CitaDelta'      => $toLocal($movto->CitaDelta),
                     'LlegadaDelta'   => $toLocal($movto->Delta?->LlegadaDelta),
                     'SalidaDelta'    => $toLocal($movto->Delta?->SalidaDelta),

@@ -11,11 +11,12 @@ class Bascula extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'IDMovto', 'HoraEntradaBascula', 'HoraSalidaBascula', 'HoraSalidaBasEmbarque',
+        'IDMovto', 'HoraEntradaBascula', 
+        'HoraSalidaBascula', 'HoraSalidaBasEmbarque',
     ];
 
     public function Movto()
     {
-        return $this->belongsTo(Movto::class, 'IDBascula', 'IDMovto');
+        return $this->belongsTo(Movto::class, 'IDMovto', 'IDBascula');
     }
 }

@@ -16,7 +16,7 @@ class MonitorAnden extends Model
 
     public function Movto()
     {
-        return $this->belongsTo(Movto::class, 'IdMonitor', 'IDMovto');
+        return $this->belongsTo(Movto::class, 'IDMovto', 'IdMonitor');
     }
 
     public function Anden()

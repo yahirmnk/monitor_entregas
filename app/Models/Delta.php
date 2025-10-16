@@ -11,11 +11,12 @@ class Delta extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'IDMovto', 'SalidaDelta', 'LlegadaDelta'
+        'IDMovto', 'SalidaDelta', 
+        'LlegadaDelta', 'ODP'
     ];
 
     public function Movto()
     {
-        return $this->belongsTo(Movto::class, 'IDDelta', 'IDMovto');
+        return $this->belongsTo(Movto::class, 'IDMovto', 'IDDelta');
     }
 }
