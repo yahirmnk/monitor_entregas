@@ -78,7 +78,7 @@ const getColorClase = (movto) => {
   if (citaDelta && !llegadaDelta) {
     const diff = differenceInMinutes(citaDelta, ahora)
     if (diff <= 120 && diff > 60) colorCelda.llegadaDelta = 'estado-naranja'
-    else if (diff <= 60 && diff >= 0) colorCelda.llegadaDelta = 'estado-rojo'
+    else if (diff <= 60) colorCelda.llegadaDelta = 'estado-rojo'
   } else if (llegadaDelta) {
     colorCelda.llegadaDelta = 'estado-verde'
   }
@@ -154,8 +154,10 @@ export default function Dashboard() {
   const obtenerDatos = async () => {
     try {
       let url = '/api/monitor/json'
-      if (fechaInicio && fechaFin) url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
-      else url += `?fecha=${fechaSeleccionada || new Date().toISOString().split('T')[0]}`
+      // --- Descomentar para volver a activar filtros de rango de fechas ---
+      // if (fechaInicio && fechaFin) url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
+      // else 
+      url += `?fecha=${fechaSeleccionada || new Date().toISOString().split('T')[0]}`
 
       console.log('Conectando con backend:', url)
       const res = await fetch(url)
@@ -174,10 +176,10 @@ export default function Dashboard() {
   return (
     <>
       <Head title="Almacen" />
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4">MONITOR TRÁFICO</h1>
+      <div className="container mx-auto max-w-none p-2">
+        <h1 className="text-3xl font-bold mb-4 text-center">MONITOR TRÁFICO</h1>
 
-        <div className="flex flex-wrap gap-4 items-center mb-4">
+        <div className="flex flex-wrap gap-4 items-center mb-4 justify-center">
           <div>
             <label className="block text-sm font-medium">Fecha única</label>
             <input
@@ -191,6 +193,8 @@ export default function Dashboard() {
               className="border rounded px-2 py-1"
             />
           </div>
+
+          {/* --- Campos de rango temporal (comentados temporalmente) ---
           <div>
             <label className="block text-sm font-medium">Desde</label>
             <input
@@ -215,10 +219,11 @@ export default function Dashboard() {
               className="border rounded px-2 py-1"
             />
           </div>
+          --- Fin de campos de rango temporal --- */}
 
           <button
             onClick={obtenerDatos}
-            className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
           >
             Filtrar
           </button>
@@ -228,70 +233,73 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <table className="min-w-full border border-gray-300 text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border px-2 py-1">ODP</th>
-              <th className="border px-2 py-1">Cita Delta</th>
-              <th className="border px-2 py-1">Llegada Delta</th>
-              <th className="border px-2 py-1">Salida Delta</th>
-              <th className="border px-2 py-1">Entrada Báscula</th>
-              <th className="border px-2 py-1">Salida Báscula</th>
-              <th className="border px-2 py-1">No. Andén</th>
-              <th className="border px-2 py-1">Llegada Andén</th>
-              <th className="border px-2 py-1">Salida Andén</th>
-              <th className="border px-2 py-1">Salida Planta</th>
-              <th className="border px-2 py-1">Inicio Ruta</th>
-            </tr>
-          </thead>
-          <tbody>
-            {movtos.length > 0 ? (
-              movtos
-                //.filter((m) => !m.SalidaPlanta) //MANTENER DESACTIVADA YA QUE OMITE REGISTROS
-                .map((m, i) => {
-                  const { colorCelda, colorFila } = getColorClase(m)
-                  return (
-                    <tr key={i} className={`text-center ${colorFila}`}>
-                      <td className="border px-2 py-1">{m.ODP || 'No reportado'}</td>
-                      <td className="border px-2 py-1">{formatearFecha(m.CitaDelta)}</td>
-                      <td className={`border px-2 py-1 ${colorCelda.llegadaDelta}`}>
-                        {formatearFecha(m.LlegadaDelta)}
-                      </td>
-                      <td className={`border px-2 py-1 ${colorCelda.salidaDelta}`}>
-                        {formatearFecha(m.SalidaDelta)}
-                      </td>
-                      <td className={`border px-2 py-1 ${colorCelda.entradaBascula}`}>
-                        {formatearFecha(m.EntradaBascula)}
-                      </td>
-                      <td className={`border px-2 py-1 ${colorCelda.salidaBascula}`}>
-                        {formatearFecha(m.SalidaBascula)}
-                      </td>
-                      <td className="border px-2 py-1">{m.NoAnden || 'No reportado'}</td>
-                      <td className={`border px-2 py-1 ${colorCelda.llegadaAnden}`}>
-                        {formatearFecha(m.LlegadaAnden)}
-                      </td>
-                      <td className={`border px-2 py-1 ${colorCelda.salidaAnden}`}>
-                        {formatearFecha(m.SalidaAnden)}
-                      </td>
-                      <td className={`border px-2 py-1 ${colorCelda.salidaPlanta}`}>
-                        {formatearFecha(m.SalidaPlanta)}
-                      </td>
-                      <td className={`border px-2 py-1 ${colorCelda.inicioRuta}`}>
-                        {formatearFecha(m.InicioRuta)}
-                      </td>
-                    </tr>
-                  )
-                })
-            ) : (
+        <div className="overflow-x-auto max-h-[85vh] shadow-md border border-gray-300 rounded-md">
+          <table className="table-auto w-full text-xs md:text-sm border-collapse">
+            <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
               <tr>
-                <td colSpan="11" className="text-center py-3 text-gray-500">
-                  No hay registros para la fecha seleccionada o rango
-                </td>
+                <th className="border px-2 py-2">ODP</th>
+                <th className="border px-2 py-2">Cita Delta</th>
+                <th className="border px-2 py-2">Llegada Delta</th>
+                <th className="border px-2 py-2">Salida Delta</th>
+                <th className="border px-2 py-2">Entrada Báscula</th>
+                <th className="border px-2 py-2">Salida Báscula</th>
+                <th className="border px-2 py-2">No. Andén</th>
+                <th className="border px-2 py-2">Llegada Andén</th>
+                <th className="border px-2 py-2">Salida Andén</th>
+                <th className="border px-2 py-2">Salida Planta</th>
+                <th className="border px-2 py-2">Inicio Ruta</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {movtos.length > 0 ? (
+                movtos
+                  //.filter((m) => !m.InicioRuta) //MANTENER DESACTIVADA YA QUE OMITE REGISTROS
+                  .map((m, i) => {
+                    const { colorCelda, colorFila } = getColorClase(m)
+                    return (
+                      <tr key={i} className={`text-center ${colorFila}`}>
+                        <td className="border px-2 py-1">{m.ODP || 'No reportado'}</td>
+                        <td className="border px-2 py-1">{formatearFecha(m.CitaDelta)}</td>
+                        <td className={`border px-2 py-1 ${colorCelda.llegadaDelta}`}>
+                          {formatearFecha(m.LlegadaDelta)}
+                        </td>
+                        <td className={`border px-2 py-1 ${colorCelda.salidaDelta}`}>
+                          {formatearFecha(m.SalidaDelta)}
+                        </td>
+                        <td className={`border px-2 py-1 ${colorCelda.entradaBascula}`}>
+                          {formatearFecha(m.EntradaBascula)}
+                        </td>
+                        <td className={`border px-2 py-1 ${colorCelda.salidaBascula}`}>
+                          {formatearFecha(m.SalidaBascula)}
+                        </td>
+                        <td className="border px-2 py-1">{m.NoAnden || 'No reportado'}</td>
+                        <td className={`border px-2 py-1 ${colorCelda.llegadaAnden}`}>
+                          {formatearFecha(m.LlegadaAnden)}
+                        </td>
+                        <td className={`border px-2 py-1 ${colorCelda.salidaAnden}`}>
+                          {formatearFecha(m.SalidaAnden)}
+                        </td>
+                        <td className={`border px-2 py-1 ${colorCelda.salidaPlanta}`}>
+                          {formatearFecha(m.SalidaPlanta)}
+                        </td>
+                        <td className={`border px-2 py-1 ${colorCelda.inicioRuta}`}>
+                          {formatearFecha(m.InicioRuta)}
+                        </td>
+                      </tr>
+                    )
+                  })
+              ) : (
+                <tr>
+                  <td colSpan="11" className="text-center py-3 text-gray-500">
+                    No hay registros para la fecha seleccionada o rango
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </>
   )
 }
+
