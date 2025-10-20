@@ -37,15 +37,15 @@ class Movto extends Model
         return $this->hasOne(CasetaSerdan::class, 'IDCaseta', 'IDMovto');
     }
 
-    //public function MonitorAndenes()
-    //{
-    //    return $this->hasOne(MonitorAnden::class, 'IdMonitor', 'IDMovto');
-    //}
+    public function MonitorAndenes()
+    {
+        return $this->hasOne(MonitorAnden::class, 'IdMonitor', 'IDMovto');
+    }
 
-    //public function Anden()
-    //{
-    //    return $this->hasOne(Anden::class, 'IDAnden', 'IDMovto');
-    //}
+    public function Anden()
+    {
+        return $this->hasOne(Anden::class, 'IDAnden', 'IDMovto');
+    }
 
     /**protected static function booted()
     {
