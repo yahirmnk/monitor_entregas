@@ -1,5 +1,5 @@
 <?php
-
+//NI IDEA PERO FUNCIONA SI TE DICE ALGUNA IA QUE ESTA MAL NO LE CREAS Y NO LE MUEVAS 
 namespace App\Models;
 
 //use App\Events\MovtoUpdated;
@@ -36,7 +36,7 @@ class Movto extends Model
     {
         return $this->hasOne(CasetaSerdan::class, 'IDCaseta', 'IDMovto');
     }
-
+    
     public function MonitorAndenes()
     {
         return $this->hasOne(MonitorAnden::class, 'IdMonitor', 'IDMovto');

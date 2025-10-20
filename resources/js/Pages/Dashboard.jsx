@@ -270,8 +270,9 @@ export default function Dashboard() {
             <tbody>
               {movtos.length > 0 ? (
                 movtos
-                  // .filter((m) => !m.SalidaPlanta) //MANTENER DESACTIVADA YA QUE OMITE REGISTROS
+                  // .filter((m) => !m.SalidaPlanta) 
                   // .filter((m) => m.CitaDelta)
+                  //.filter((m) => m.Status?.toLowerCase() !== 'entregado')
                   .map((m, i) => {
                     const { colorCelda, colorFila } = getColorClase(m)
                     return (

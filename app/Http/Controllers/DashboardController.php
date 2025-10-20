@@ -36,10 +36,11 @@ class DashboardController extends Controller
             //                ->whereNull('Consolidado');
             //        });
             //});
-            ->where(function ($q) {
-                $q->whereNotNull('Status') 
-                ->whereRaw("LOWER(TRIM(Status)) = 'activo'"); 
-            });
+            //->where(function ($q) {
+            //    $q->whereNotNull('Status') 
+            //    ->whereRaw("LOWER(TRIM(Status)) = 'activo'"); 
+            //})
+            ;
             // Filtro por rango o fecha única
             if ($fechaInicio && $fechaFin) {
                 $query->whereBetween('CitaCarga', [$fechaInicio, $fechaFin]);
@@ -138,7 +139,8 @@ class DashboardController extends Controller
                     'SalidaPlanta'    => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
                     'InicioRuta'      => $toLocal($movto->FechaInicioRuta),
                     'ETA'             => $toLocal($movto->TiempoETA),
-                    'Status'          => $movto->StatusEntrega,
+                    'Status'            => $movto->Status,           // Activo / Cancelado
+                    'StatusEntrega'     => $movto->StatusEntrega, 
                     'ComentarioTransito' => $movto->ComentarioTransito,
 
                 ];
