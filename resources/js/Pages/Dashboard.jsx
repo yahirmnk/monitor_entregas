@@ -74,7 +74,8 @@ const getColorClase = (movto) => {
   }
 
   let colorFila = ''
-
+  //CONDICIONES
+  {/* 
   if (citaDelta && !llegadaDelta) {
     const diff = differenceInMinutes(citaDelta, ahora)
     if (diff <= 120 && diff > 60) colorCelda.llegadaDelta = 'estado-naranja'
@@ -120,7 +121,7 @@ const getColorClase = (movto) => {
   } else if (salidaPlanta) {
     
   }
-
+  */}
   return { colorCelda, colorFila }
 }
 
@@ -156,8 +157,8 @@ export default function Dashboard() {
     try {
       let url = '/api/monitor/json'
       // Descomentar para volver a activar filtros de rango de fechas
-       if (fechaInicio && fechaFin) url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
-       else 
+      if (fechaInicio && fechaFin) url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`
+      else 
       url += `?fecha=${fechaSeleccionada || new Date().toISOString().split('T')[0]}`
 
       console.log('Conectando con backend:', url)
@@ -178,7 +179,7 @@ export default function Dashboard() {
     <>
       <Head title="Almacen" />
       <div className="container mx-auto max-w-none p-2">
-        <h1 className="text-3xl font-bold mb-4 text-center">MONITOR TRÁFICO PASTEURIZADORA MAULEC SAPI DE CV</h1>
+        <h1 className="text-3xl font-bold mb-4 text-center">MONITOR DE ENTREGAS PASTEURIZADORA MAULEC SAPI DE CV</h1>
 
         <div className="flex flex-wrap gap-4 items-center mb-4 justify-center">
           {/* Campo de Fecha Única commentado
@@ -197,7 +198,6 @@ export default function Dashboard() {
           </div>
           */}
 
-          
           <div>
             <label className="block text-sm font-medium">Desde</label>
             <input
@@ -222,7 +222,6 @@ export default function Dashboard() {
               className="border rounded px-2 py-1"
             />
           </div>
-           
 
           <button
             onClick={obtenerDatos}
@@ -260,55 +259,31 @@ export default function Dashboard() {
               <tr>
                 <th className="border px-2 py-2">ODP</th>
                 <th className="border px-2 py-2">Línea Transporte</th>
-                <th className="border px-2 py-2">Cita Delta</th>
-                <th className="border px-2 py-2">Llegada Delta</th>
-                <th className="border px-2 py-2">Salida Delta</th>
-                <th className="border px-2 py-2">Entrada Báscula</th>
-                <th className="border px-2 py-2">Salida Báscula</th>
-                <th className="border px-2 py-2">No. Andén</th>
-                <th className="border px-2 py-2">Llegada Andén</th>
-                <th className="border px-2 py-2">Salida Andén</th>
+                <th className="border px-2 py-2">Cita Entrega</th>
                 <th className="border px-2 py-2">Salida Planta</th>
                 <th className="border px-2 py-2">Inicio Ruta</th>
+                <th className="border px-2 py-2">ETA</th>
+                <th className="border px-2 py-2">Status</th>
+                <th className="border px-2 py-2">Comentarios</th>
               </tr>
             </thead>
             <tbody>
               {movtos.length > 0 ? (
                 movtos
-                  .filter((m) => !m.SalidaPlanta) //MANTENER DESACTIVADA YA QUE OMITE REGISTROS
-                  .filter((m) => m.CitaDelta)
+                  // .filter((m) => !m.SalidaPlanta) //MANTENER DESACTIVADA YA QUE OMITE REGISTROS
+                  // .filter((m) => m.CitaDelta)
                   .map((m, i) => {
                     const { colorCelda, colorFila } = getColorClase(m)
                     return (
                       <tr key={i} className={`text-center ${colorFila}`}>
                         <td className="border px-2 py-1">{m.ODP || 'No reportado'}</td>
                         <td className="border px-2 py-1">{m.LineaTransporte || 'No reportado'}</td>
-                        <td className="border px-2 py-1">{formatearFecha(m.CitaDelta)}</td>
-                        <td className={`border px-2 py-1 ${colorCelda.llegadaDelta}`}>
-                          {formatearFecha(m.LlegadaDelta)}
-                        </td>
-                        <td className={`border px-2 py-1 ${colorCelda.salidaDelta}`}>
-                          {formatearFecha(m.SalidaDelta)}
-                        </td>
-                        <td className={`border px-2 py-1 ${colorCelda.entradaBascula}`}>
-                          {formatearFecha(m.EntradaBascula)}
-                        </td>
-                        <td className={`border px-2 py-1 ${colorCelda.salidaBascula}`}>
-                          {formatearFecha(m.SalidaBascula)}
-                        </td>
-                        <td className="border px-2 py-1">{m.NoAnden || 'No reportado'}</td>
-                        <td className={`border px-2 py-1 ${colorCelda.llegadaAnden}`}>
-                          {formatearFecha(m.LlegadaAnden)}
-                        </td>
-                        <td className={`border px-2 py-1 ${colorCelda.salidaAnden}`}>
-                          {formatearFecha(m.SalidaAnden)}
-                        </td>
-                        <td className={`border px-2 py-1 ${colorCelda.salidaPlanta}`}>
-                          {formatearFecha(m.SalidaPlanta)}
-                        </td>
-                        <td className={`border px-2 py-1 ${colorCelda.inicioRuta}`}>
-                          {formatearFecha(m.InicioRuta)}
-                        </td>
+                        <td className="border px-2 py-1">{formatearFecha(m.CitaEntrega)}</td>
+                        <td className="border px-2 py-1">{formatearFecha(m.SalidaPlanta)}</td>
+                        <td className="border px-2 py-1">{formatearFecha(m.InicioRuta)}</td>
+                        <td className="border px-2 py-1">{formatearFecha(m.ETA)}</td>
+                        <td className="border px-2 py-1">{m.Status || 'No reportado'}</td>
+                        <td className="border px-2 py-1">{m.ComentarioTransito || 'No reportado'}</td>
                       </tr>
                     )
                   })
@@ -331,4 +306,3 @@ export default function Dashboard() {
     </>
   )
 }
-

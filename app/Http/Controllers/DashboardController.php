@@ -67,16 +67,12 @@ class DashboardController extends Controller
                 return [
                     'ODP'            => $movto->ODP,
                     'LineaTransporte' => $movto->LineaTransporte,
-                    'CitaDelta'      => $toLocal($movto->CitaDelta),
-                    'LlegadaDelta'   => $toLocal($movto->Delta?->LlegadaDelta),
-                    'SalidaDelta'    => $toLocal($movto->Delta?->SalidaDelta),
-                    'EntradaBascula' => $toLocal($movto->Bascula?->HoraEntradaBascula),
-                    'SalidaBascula'  => $toLocal($movto->Bascula?->HoraSalidaBascula),
-                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
-                    'LlegadaAnden'   => $toLocal($movto->Anden?->HoraLlegada),
-                    'SalidaAnden'    => $toLocal($movto->Anden?->HoraSalida),
-                    'SalidaPlanta'   => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
-                    'InicioRuta'     => $toLocal($movto->FechaProgramacion),
+                    'CitaEntrega'     => $toLocal($movto->CitaCliente),
+                    'SalidaPlanta'    => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
+                    'InicioRuta'      => $toLocal($movto->FechaInicioRuta),
+                    'ETA'             => $toLocal($movto->TiempoETA),
+                    'Status'          => $movto->StatusEntrega,
+                    'ComentarioTransito' => $movto->ComentarioTransito,
                 ];
             });
 
@@ -138,16 +134,13 @@ class DashboardController extends Controller
                 return [
                     'ODP'            => $movto->ODP ?? $movto->Delta?->ODP?? null,
                     'LineaTransporte' => $movto->LineaTransporte,
-                    'CitaDelta'      => $toLocal($movto->CitaDelta),
-                    'LlegadaDelta'   => $toLocal($movto->Delta?->LlegadaDelta),
-                    'SalidaDelta'    => $toLocal($movto->Delta?->SalidaDelta),
-                    'EntradaBascula' => $toLocal($movto->Bascula?->HoraEntradaBascula),
-                    'SalidaBascula'  => $toLocal($movto->Bascula?->HoraSalidaBascula),
-                    'NoAnden'        => $movto->MonitorAndenes?->NoAnden ?? $movto->Anden?->NoAnden ?? null,
-                    'LlegadaAnden'   => $toLocal($movto->Anden?->HoraLlegada),
-                    'SalidaAnden'    => $toLocal($movto->Anden?->SalidaAnden),
-                    'SalidaPlanta'   => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
-                    'InicioRuta'     => $toLocal($movto->FechaProgramacion),
+                    'CitaEntrega'     => $toLocal($movto->CitaCliente),
+                    'SalidaPlanta'    => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
+                    'InicioRuta'      => $toLocal($movto->FechaInicioRuta),
+                    'ETA'             => $toLocal($movto->TiempoETA),
+                    'Status'          => $movto->StatusEntrega,
+                    'ComentarioTransito' => $movto->ComentarioTransito,
+
                 ];
             });
 

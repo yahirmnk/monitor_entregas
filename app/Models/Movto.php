@@ -1,9 +1,8 @@
 <?php
-//NO TOCAR FUNCIONA SI UNA IA DICE QUE ESTO ESTA MAL IGNORALO FUNCIONA Y NO DEBERIA PERO ES ALGO POR LA 
-//BASE DE DATOS, PUEDES MOVERLO EL RESTO DE MODELOS PERO MOVTO LA PRINCIPAL NO, ODP DE ALGUNA FORMA ES LA LLAVE SIN SER LLAVE
+
 namespace App\Models;
 
-use App\Events\MovtoUpdated;
+//use App\Events\MovtoUpdated;
 use Illuminate\Database\Eloquent\Model;
 
 class Movto extends Model
@@ -18,35 +17,37 @@ class Movto extends Model
         'FechaProgramacion', 'CitaCarga',
         'Consolidado', 'es_principal',
         'LineaTransporte', 'Status',
+        'CitaCliente', 'FechaInicioRuta',
+        'TiempoETA', 'ComentarioTransito',
+        'StatusEntrega'
     ];
 
-    // Relación con tabla Delta por ODP
     public function Delta()
     {
-        return $this->hasOne(Delta::class, 'ODP', 'ODP');
+        return $this->hasOne(Delta::class, 'IDDelta', 'IDMovto');
     }
 
     public function Bascula()
     {
-        return $this->hasOne(Bascula::class, 'ODP', 'ODP');
+        return $this->hasOne(Bascula::class, 'IDBascula', 'IDMovto');
     }
 
     public function CasetaSerdan()
     {
-        return $this->hasOne(CasetaSerdan::class, 'ODP', 'ODP');
+        return $this->hasOne(CasetaSerdan::class, 'IDCaseta', 'IDMovto');
     }
 
-    public function MonitorAndenes()
-    {
-        return $this->hasOne(MonitorAnden::class, 'ODP', 'ODP');
-    }
+    //public function MonitorAndenes()
+    //{
+    //    return $this->hasOne(MonitorAnden::class, 'IdMonitor', 'IDMovto');
+    //}
 
-    public function Anden()
-    {
-        return $this->hasOne(Anden::class, 'ODP', 'ODP');
-    }
+    //public function Anden()
+    //{
+    //    return $this->hasOne(Anden::class, 'IDAnden', 'IDMovto');
+    //}
 
-    protected static function booted()
+    /**protected static function booted()
     {
         static::created(function ($movto) {
             event(new MovtoUpdated($movto));
@@ -55,5 +56,6 @@ class Movto extends Model
         static::updated(function ($movto) {
             event(new MovtoUpdated($movto));
         });
-    }
+    }*/
 }
+
