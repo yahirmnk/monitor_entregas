@@ -272,7 +272,7 @@ export default function Dashboard() {
                 movtos
                   // .filter((m) => !m.SalidaPlanta) 
                   // .filter((m) => m.CitaDelta)
-                  //.filter((m) => m.Status?.toLowerCase() !== 'entregado')
+                  .filter((m) => m.Status?.toLowerCase() !== 'entregado')
                   .map((m, i) => {
                     const { colorCelda, colorFila } = getColorClase(m)
                     return (
