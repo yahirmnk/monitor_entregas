@@ -58,8 +58,8 @@ const getColorClase = (movto) => {
   } catch {
     ahora = new Date()
   }
-  const salidaPlanta = movto.SalidaPlanta ? parseISO(movto.SalidaPlanta) : null
-  const inicioRuta = movto.InicioRuta ? parseISO(movto.InicioRuta) : null
+  //const salidaPlanta = movto.SalidaPlanta ? parseISO(movto.SalidaPlanta) : null
+  //const inicioRuta = movto.InicioRuta ? parseISO(movto.InicioRuta) : null
   const citaEntrega = movto.CitaEntrega ? parseISO(movto.CitaEntrega) : null
   const colorCelda = { inicioRuta: '', salidaPlanta: '', citaEntrega: '' }
   let colorFila = ''
@@ -104,6 +104,7 @@ export default function Dashboard() {
   const [fechaFin, setFechaFin] = useState(hoy)
   const [movtos, setMovtos] = useState([])
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
+  const [filtroTransporte, setFiltroTransporte] = useState('')
   const INTERVALO_ACTUALIZACION = 60000
   useEffect(() => {
     obtenerDatos()
@@ -171,6 +172,16 @@ export default function Dashboard() {
               className="border rounded px-2 py-1"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium">Línea de Transporte</label>
+            <input
+              type="text"
+              placeholder="Buscar línea..."
+              value={filtroTransporte}
+              onChange={(e) => setFiltroTransporte(e.target.value)}
+              className="border rounded px-2 py-1"
+            />
+          </div>
           <button
             onClick={obtenerDatos}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
@@ -218,6 +229,11 @@ export default function Dashboard() {
               {movtos.length > 0 ? (
                 movtos
                   .filter((m) => m.Status?.toLowerCase() !== 'entregado')
+                  .filter((m) =>
+                    filtroTransporte.trim() === '' 
+                      ? true 
+                      : m.LineaTransporte?.toLowerCase().includes(filtroTransporte.toLowerCase())
+                  )
                   .map((m, i) => {
                     const { colorCelda, colorFila } = getColorClase(m)
                     return (
