@@ -70,7 +70,7 @@ class DashboardController extends Controller
                     'CitaEntrega'     => $toLocal($movto->CitaCliente),
                     'SalidaPlanta'    => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
                     'InicioRuta'      => $toLocal($movto->FechaInicioRuta),
-                    'ETA'             => $toLocal($movto->TiempoETA),
+                    'ETA'             => $movto->TiempoETA,
                     'Status'          => $movto->StatusEntrega,
                     'ComentarioTransito' => $movto->ComentarioTransito,
                 ];
@@ -137,7 +137,7 @@ class DashboardController extends Controller
                     'CitaEntrega'     => $toLocal($movto->CitaCliente),
                     'SalidaPlanta'    => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
                     'InicioRuta'      => $toLocal($movto->FechaInicioRuta),
-                    'ETA'             => $toLocal($movto->TiempoETA),
+                    'ETA'             => $movto->TiempoETA,
                     //'Status'            => $movto->Status,           // Activo / Cancelado
                     'Status'     => $movto->StatusEntrega, 
                     'ComentarioTransito' => $movto->ComentarioTransito,

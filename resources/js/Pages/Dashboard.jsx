@@ -33,17 +33,30 @@ if (typeof document !== 'undefined') {
   document.head.appendChild(styleTag)
 }
 
-// Formatear Fecha 
+// Formatear Fecha
 const formatearFecha = (valor) => {
   if (!valor) return 'No reportado'
   try {
+    if (/^\d{2}:\d{2}(:\d{2})?$/.test(valor.trim())) {//tambien se movio en el controlador
+      return valor.trim()
+    }
     const [fecha, hora] = valor.split(' ')
     const [y, m, d] = fecha.split('-')
     return `${d}/${m}/${y}${hora ? ' ' + hora : ''}`
   } catch {
     return valor
   }
-}
+} 
+//const formatearFecha = (valor) => {
+//  if (!valor) return 'No reportado'
+//  try {
+//    const [fecha, hora] = valor.split(' ')
+//    const [y, m, d] = fecha.split('-')
+//    return `${d}/${m}/${y}${hora ? ' ' + hora : ''}`
+//  } catch {
+//    return valor
+//  }
+//}
 
 //  Cálculo de colores 
 const getColorClase = (movto) => {
