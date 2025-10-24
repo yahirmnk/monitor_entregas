@@ -19,7 +19,8 @@ class Movto extends Model
         'LineaTransporte', 'Status',
         'CitaCliente', 'FechaInicioRuta',
         'TiempoETA', 'ComentarioTransito',
-        'StatusEntrega'
+        'StatusEntrega', 'Destino',
+        'Cliente',
     ];
 
     public function Delta()

@@ -37,10 +37,10 @@ class DashboardController extends Controller
             //        });
             //});
             //Se omiten las ODP que en el campo StatusEntrega diga entregado o cancelado
-            ->where(function ($q) {
+            /**->where(function ($q) { SE OMITE POR SWITCH
                 $q->whereNotNull('StatusEntrega')
                 ->whereRaw("LOWER(TRIM(StatusEntrega)) IN ('entregado', 'cancelado')");
-            })
+            })*/
             //Se muestran solo las ODP que en el campo Status diga activo
             ->where(function ($q) {
                 $q->whereNotNull('Status') 
@@ -49,9 +49,9 @@ class DashboardController extends Controller
 
             // Filtro por rango o fecha única
             if ($fechaInicio && $fechaFin) {
-                $query->whereBetween('CitaCarga', [$fechaInicio, $fechaFin]);
+                $query->whereBetween('CitaCliente', [$fechaInicio, $fechaFin]);
             } else {
-                $query->whereDate('CitaCarga', $fecha);
+                $query->whereDate('CitaCliente', $fecha);
             }
 
             $query->orderBy('CitaDelta', 'asc');
@@ -72,7 +72,9 @@ class DashboardController extends Controller
             // Mapear resultados
             $movtos = $query->get()->map(function ($movto) use ($toLocal) {
                 return [
-                    'ODP'            => $movto->ODP,
+                    'ODP'             => $movto->ODP,
+                    'Destino'         => $movto->Destino,  
+                    'Cliente'         => $movto->Cliente,
                     'LineaTransporte' => $movto->LineaTransporte,
                     'CitaEntrega'     => $toLocal($movto->CitaCliente),
                     'SalidaPlanta'    => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),
@@ -140,6 +142,8 @@ class DashboardController extends Controller
             $datos = $query->get()->map(function ($movto) use ($toLocal) {
                 return [
                     'ODP'            => $movto->ODP ?? $movto->Delta?->ODP?? null,
+                    'Destino'         => $movto->Destino,  
+                    'Cliente'         => $movto->Cliente,
                     'LineaTransporte' => $movto->LineaTransporte,
                     'CitaEntrega'     => $toLocal($movto->CitaCliente),
                     'SalidaPlanta'    => $toLocal($movto->Bascula?->HoraSalidaBasEmbarque),

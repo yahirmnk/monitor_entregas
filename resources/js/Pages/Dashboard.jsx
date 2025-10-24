@@ -86,13 +86,14 @@ const getColorClase = (movto) => {
         ? dateFnsTz.utcToZonedTime(new Date(), zona)
         : new Date()
       const diffEntrega = differenceInMinutes(citaLocal, ahoraLocal)
-      console.log(
-        '[CITA]',
-        'ODP:', movto.ODP,
-        '| CitaEntrega:', citaLocal,
-        '| Ahora:', ahoraLocal,
-        '| Diff(min):', diffEntrega
-      )
+      //console.log(
+      //  '[CITA]',
+      //  'ODP:', movto.ODP,
+      //  '| CitaEntrega:', citaLocal,
+      //  '| Ahora:', ahoraLocal,
+      //  '| Diff(min):', diffEntrega
+      //)SOLO ACTIVA PARA VERIFICAR CONDICIONES DE TIEMPO EN CONSOLA SI NO ESTORBAN
+      
       if (diffEntrega <= 120 && diffEntrega > 60) {
         colorCelda.citaEntrega = 'estado-naranja'
       } else if (diffEntrega <= 60 && diffEntrega >= 0) {
@@ -118,6 +119,7 @@ export default function Dashboard() {
   const [movtos, setMovtos] = useState([])
   const [ultimaActualizacion, setUltimaActualizacion] = useState(null)
   const [filtroTransporte, setFiltroTransporte] = useState('')
+  const [mostrarEntregados, setMostrarEntregados] = useState(false)
   const INTERVALO_ACTUALIZACION = 60000
   useEffect(() => {
     obtenerDatos()
@@ -201,6 +203,27 @@ export default function Dashboard() {
           >
             Filtrar
           </button>
+          {/*BTN para mostrar entregados y todos excepto entregados*/}
+          <div className='flex items-center gap-2'>
+              <span className="text-sm font-medium text-gray-700">
+                Entregados
+              </span>
+              <button onClick={() => setMostrarEntregados(!mostrarEntregados)}
+                className={`relative w-16 h-8 flex items-center rounded-full transition-all duration-300 
+                  ${mostrarEntregados ? 'bg-blue-500' : 'bg-gray-300'}`}>
+                <span className={`absolute w-7 h-7 bg-white rounded-full shadow-md transform transition-transform duration-300 
+                  ${mostrarEntregados ? 'translate-x-8' : 'translate-x-1'}`}/>
+                <span className={`absolute left-2 text-xs font-bold transition-opacity duration-200 
+                  ${mostrarEntregados ? 'opacity-0' : 'opacity-100 text-gray-600'}`}>
+                  OFF
+                </span>
+                <span className={`absolute right-2 text-xs font-bold transition-opacity duration-200 
+                  ${mostrarEntregados ? 'opacity-100 text-white' : 'opacity-0'}`}>
+                    ON
+                </span>  
+              </button>
+          </div>
+          {/*Se termina codigo del switch*/}  
           <div className="text-sm text-gray-600 italic">
             Última actualización: {ultimaActualizacion || '---'}
           </div>
@@ -229,6 +252,8 @@ export default function Dashboard() {
             <thead className="bg-gray-100 sticky top-0 z-10 shadow-sm">
               <tr>
                 <th className="border px-2 py-2">ODP</th>
+                <th className="border px-2 py-1">Destino</th>
+                <th className="border px-2 py-2">Cliente</th>
                 <th className="border px-2 py-2">Línea Transporte</th>
                 <th className="border px-2 py-2">Cita Entrega</th>
                 <th className="border px-2 py-2">Salida Planta</th>
@@ -241,8 +266,14 @@ export default function Dashboard() {
             <tbody>
               {movtos.length > 0 ? (
                 movtos
-                  .filter((m) => m.Status?.toLowerCase() !== 'entregado')
-                  .filter((m) => m.Status?.toLowerCase() !== 'cancelado')
+                  .filter ((m) => {
+                    const status = m.Status?.toLowerCase() || ''
+                    if (mostrarEntregados) {
+                      return status === 'entregado'
+                    } else {
+                      return status !== 'entregado' && status !== 'cancelado'
+                    }
+                  })
                   //Buscador por Linea de transporte
                   .filter((m) =>
                     filtroTransporte.trim() === '' 
@@ -254,6 +285,8 @@ export default function Dashboard() {
                     return (
                       <tr key={i} className={`text-center ${colorFila}`}>
                         <td className="border px-2 py-1">{m.ODP || 'No reportado'}</td>
+                        <td className="border px-2 py-1">{m.Destino || 'No reportado'}</td>
+                        <td className="border px-2 py-1">{m.Cliente || 'No reportado'}</td>
                         <td className="border px-2 py-1">{m.LineaTransporte || 'No reportado'}</td>
                         <td className={`border px-2 py-1 ${colorCelda.citaEntrega}`}>
                           {formatearFecha(m.CitaEntrega)}
