@@ -36,10 +36,17 @@ class DashboardController extends Controller
             //                ->whereNull('Consolidado');
             //        });
             //});
+            //Se omiten las ODP que en el campo StatusEntrega diga entregado o cancelado
+            ->where(function ($q) {
+                $q->whereNotNull('StatusEntrega')
+                ->whereRaw("LOWER(TRIM(StatusEntrega)) IN ('entregado', 'cancelado')");
+            })
+            //Se muestran solo las ODP que en el campo Status diga activo
             ->where(function ($q) {
                 $q->whereNotNull('Status') 
                 ->whereRaw("LOWER(TRIM(Status)) = 'activo'"); 
             });
+
             // Filtro por rango o fecha única
             if ($fechaInicio && $fechaFin) {
                 $query->whereBetween('CitaCarga', [$fechaInicio, $fechaFin]);

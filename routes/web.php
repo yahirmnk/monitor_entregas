@@ -10,13 +10,8 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
-    // Página de bienvenida pública (sin login)
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    // Redirigir directamente al login
+    return redirect()->route('login');
 });
 
 Route::post('/logout', function () {

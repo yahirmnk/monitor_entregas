@@ -242,6 +242,8 @@ export default function Dashboard() {
               {movtos.length > 0 ? (
                 movtos
                   .filter((m) => m.Status?.toLowerCase() !== 'entregado')
+                  .filter((m) => m.Status?.toLowerCase() !== 'cancelado')
+                  //Buscador por Linea de transporte
                   .filter((m) =>
                     filtroTransporte.trim() === '' 
                       ? true 
